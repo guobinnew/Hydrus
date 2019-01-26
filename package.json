@@ -1,0 +1,68 @@
+{
+  "name": "hydrus",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "test:unit": "vue-cli-service test:unit"
+  },
+  "dependencies": {
+    "blob-util": "^2.0.2",
+    "lodash": "^4.17.11",
+    "string-hash": "^1.1.3",
+    "uniqid": "^5.0.3",
+    "element-ui": "^2.4.11",
+    "file-saver": "^2.0.0-rc.3",
+    "font-awesome": "^4.7.0",
+    "intro.js": "^2.9.3",
+    "jspdf": "^1.5.3",
+    "konva": "^2.6.0",
+    "localforage": "^1.7.3",
+    "uuid": "^3.3.2",
+    "vue": "^2.5.21",
+    "vue-i18n": "^8.5.0",
+    "vue-introjs": "^1.3.2",
+    "vue-resize-directive": "^1.1.4",
+    "vue-resource": "^1.5.1",
+    "vue-router": "^3.0.2",
+    "vuex": "^3.0.1"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.2.0",
+    "@vue/cli-plugin-eslint": "^3.2.1",
+    "@vue/cli-plugin-unit-mocha": "^3.2.0",
+    "@vue/cli-service": "^3.2.0",
+    "@vue/eslint-config-standard": "^4.0.0",
+    "@vue/test-utils": "^1.0.0-beta.27",
+    "babel-plugin-component": "^1.1.1",
+    "chai": "^4.2.0",
+    "node-sass": "^4.11.0",
+    "sass-loader": "^7.1.0",
+    "vue-template-compiler": "^2.5.21"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/recommended",
+      "@vue/standard"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
