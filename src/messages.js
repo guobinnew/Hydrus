@@ -1,4 +1,3 @@
-import Utils from './utils'
 
 const _messages = {
   common: {
@@ -15,12 +14,12 @@ for (let [key, value] of Object.entries(_messages)) {
   for (let [name, defs] of  Object.entries(value)) {
     for (let [lang, text] of  Object.entries(defs)) {
       let obj = messages[lang]
-      if (!Utils.common.isObject(obj)) {
+      if (!obj) {
         obj = {}
         messages[lang] = obj
       }
       let prop = obj[key]
-      if (!Utils.common.isObject(prop)) {
+      if (!prop) {
         prop = {}
         obj[key] = prop
       }

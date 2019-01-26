@@ -8,8 +8,8 @@
                 <el-menu :default-active="activeIndex" class="el-menu-vertical" @select="handleSelect"
                          :collapse="isCollapse">
                     <el-menu-item index="editor">
-                        <i class="el-icon-location">行为树编辑台</i>
-                        <span slot="title"></span>
+                        <i class="el-icon-location"></i>
+                        <span slot="title">行为树编辑台</span>
                     </el-menu-item>
                     <el-menu-item index="test">
                         <i class="el-icon-setting"></i>

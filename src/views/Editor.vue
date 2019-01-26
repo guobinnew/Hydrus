@@ -38,6 +38,7 @@
 
 <script>
   import resize from 'vue-resize-directive'
+  import Corvus from '../components/corvus/index'
 
   export default {
     data: function () {
@@ -56,22 +57,29 @@
       resize,
     },
     computed: {
-      zoomIn(){
-
-      }
-
     },
     methods: {
       onContainerResize() {
         this.size.width = this.$el.clientWidth
         this.size.height = this.$el.clientHeight
-        
+        this.scene.stage.resize(this.size.width, this.size.height)
+      },
+      zoomIn(){
+
       }
     },
     mounted: function () {
       // 随窗口动态改变大小
       this.size.width = this.$el.clientWidth
       this.size.height = this.$el.clientHeight
+
+      this.scene.stage = Corvus.init({
+        container: 'scene',    //container 用来容纳舞台的容器
+        width: this.size.width,
+        height: this.size.height
+      })
+
+      
     }
   }
 </script>

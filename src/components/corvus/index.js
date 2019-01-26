@@ -1,6 +1,6 @@
 import Stage from './stage'
 
-const Blueprint = {
+const Corvus = {
   /**
    * 创建编辑面板
    * @param options
@@ -23,4 +23,4 @@ const Blueprint = {
   }
 }
 
-export default Blueprint
+export default Corvus

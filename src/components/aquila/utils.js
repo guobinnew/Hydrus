@@ -1,14 +1,16 @@
 import * as blob from 'blob-util'
-import logger from './logger'
+import stringhash from 'string-hash'
+var _ = require('lodash')
 
 // base64
-const Base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-const Base64Lookup = new Uint8Array(256);
+const Base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+const Base64Lookup = new Uint8Array(256)
 for (let i = 0; i < Base64Chars.length; i++) {
-  Base64Lookup[Base64Chars.charCodeAt(i)] = i;
+  Base64Lookup[Base64Chars.charCodeAt(i)] = i
 }
 
-const Utils = {
+const utils = {
+  lodash: _,
   common: {
     /**
      * 判断变量类型是否是字符串
@@ -91,14 +93,14 @@ const Utils = {
      * 判断是否为数组
      */
     isArray: function (val) {
-      return Utils.common.typeOf(val) === 'array'
+      return utils.common.typeOf(val) === 'array'
     },
 
     /**
      * 判断是否为类数组
      */
     isArrayLike: function (val) {
-      var type = Utils.common.typeOf(val)
+      var type = utils.common.typeOf(val)
       return type === 'array' || (type === 'object' && typeof val.length === 'number')
     },
 
@@ -106,7 +108,7 @@ const Utils = {
      * 判断是否为函数
      */
     isFunction: function (val) {
-      return Utils.common.typeOf(val) === 'function'
+      return utils.common.typeOf(val) === 'function'
     },
 
     /**
@@ -122,13 +124,44 @@ const Utils = {
      */
     string2ArrayBuffer: function (binaryString) {
       return blob.binaryStringToArrayBuffer(binaryString)
+    },
+
+    /**
+     * 字符串Trim
+     * @param {*} str
+     */
+    trimString (str) {
+      return _.trim(str)
+    },
+
+    /**
+     * 字符串hash
+     * @param {*} str string 不能为空或空格
+     */
+    hashString (str) {
+      if (!utils.common.isString(str)) {
+        return null
+      }
+      let trim = utils.common.trimString(str)
+      if (trim.length === 0) {
+        return null
+      }
+      return stringhash(trim)
+    },
+
+    /**
+     * 深度拷贝
+     */
+    clone (obj) {
+      return _.cloneDeep(obj)
     }
+
   },
   base64: {
     encodeBuffer: function (arraybuffer) {
       let bytes = new Uint8Array(arraybuffer)
       let len = bytes.length
-      let base64 = ""
+      let base64 = ''
 
       for (let i = 0; i < len; i += 3) {
         base64 += Base64Chars[bytes[i] >> 2]
@@ -138,9 +171,9 @@ const Utils = {
       }
 
       if ((len % 3) === 2) {
-        base64 = base64.substring(0, base64.length - 1) + "="
+        base64 = base64.substring(0, base64.length - 1) + '='
       } else if (len % 3 === 1) {
-        base64 = base64.substring(0, base64.length - 2) + "=="
+        base64 = base64.substring(0, base64.length - 2) + '=='
       }
 
       return base64
@@ -149,9 +182,9 @@ const Utils = {
       let bufferLength = base64.length * 0.75
       let len = base64.length
 
-      if (base64[base64.length - 1] === "=") {
+      if (base64[base64.length - 1] === '=') {
         bufferLength--
-        if (base64[base64.length - 2] === "=") {
+        if (base64[base64.length - 2] === '=') {
           bufferLength--
         }
       }
@@ -173,8 +206,16 @@ const Utils = {
 
       return arraybuffer
     }
+  },
+  devs: {
+    state: {
+      Passive: 0
+    },
+    time: {
+      Initial: 0,
+      Infinity: 0x7FFFFFFFFFFFFFFF
+    }
   }
 }
 
-
-export default Utils
+export default utils
