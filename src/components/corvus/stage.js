@@ -1,6 +1,11 @@
 import konva from 'konva'
 import uniqid from 'uniqid'
+import BTEntityNode from './node-entity'
 import BTRootNode from './node-root'
+import BTSelectorNode from './node-composite-selector'
+import BTSequenceNode from './node-composite-sequence'
+import BTTaskNode from './node-task'
+
 
 /**
  * 编辑面板
@@ -13,6 +18,7 @@ class Stage {
     }
     _.merge(this.options, options)
     this.stage = new konva.Stage(this.options)
+    this.stage.setAttr('btstage', this)
 
     this.layers = {}
     // 创建图层
@@ -24,6 +30,11 @@ class Stage {
     this.linkIndex = {}
     this.layers.link = new konva.Layer()
     this.stage.add(this.layers.link)
+
+    // 拖放层
+    this.dragNode = null
+    this.layers.drag = new konva.Layer()
+    this.stage.add(this.layers.drag)
 
     // 是否被修改
     this.modified = false
@@ -84,9 +95,6 @@ class Stage {
 
     this.stage.on('dragend', (evt) => {
       let target = evt.target
-
-      console.log(this.root.node().position())
-      
     })
 
     this.update()
@@ -165,9 +173,63 @@ class Stage {
   }
 
   /**
-   * add
+   * 添加Selector节点
    * @param {*} config 
    */
+  addSelectorNode (option) {
+    let parent = this.getNode(option.parentId)
+    let node = new BTSelectorNode(option.config)
+    parent.addChild(node)
+  }
+
+  /**
+   * 添加Sequence节点
+   * @param {*} config 
+   */
+  addSequenceNode (option) {
+    let parent = this.getNode(option.parentId)
+    let node = new BTSequenceNode(option.config)
+    parent.addChild(node)
+  }
+
+   /**
+   * 添加Sequence节点
+   * @param {*} config 
+   */
+  addTaskNode (option) {
+    let parent = this.getNode(option.parentId)
+    let node = new BTTaskNode(option.config)
+    parent.addChild(node)
+  }
+
+  /**
+   * 根据ID获取Node
+   * @param {*} uid 
+   */
+  getNode (uid) {
+    if (uid) {
+      let nodes = this.layers.model.find('#' + uid)
+      if (nodes.length > 0) {
+        if (nodes.length !== 1) {
+          Aquila.Logger.warn(`Stage::getNode - Node <${uid}> is not unique`)
+        }
+        let node = nodes[0].getAttr('btnode')
+        if (node instanceof BTEntityNode) {
+          return node
+        } else {
+          Aquila.Logger.error(`Stage::getNode - Node <${uid}> is not BTEnittyNode`)
+        }
+      }
+    }
+    return this.root
+  }
+
+  /**
+   * 更新节点访问次序
+   */
+  updateOrder () {
+
+  }
 
   /**
    * 添加连线
@@ -275,59 +337,6 @@ class Stage {
       end: end,
       points: opt.points
     })
-  }
-
-  /**
-   * 创建close按钮
-   * @param opt
-   * {
-   *   uid:
-   *   x:
-   *   y:
-   *   size:
-   *   background:
-   *   action:
-   * }
-   */
-  buildCloseButton (opt) {
-    // 删除按钮
-    let close = new konva.Group({
-      x: opt.x,
-      y: opt.y,
-      rotation: 45,
-      name: 'modelclose'
-    })
-
-    let bg = new konva.Circle({
-      x: 0,
-      y: 0,
-      radius: opt.size / 2,
-      fill: opt.background ? opt.background : 'transparent',
-      stroke: opt.background ? opt.background : 'transparent'
-    })
-    close.add(bg)
-
-    let lineRadius = opt.size / 2 - 2
-    let hline = new konva.Line({
-      points: [-lineRadius, 0, lineRadius, 0],
-      stroke: '#ddd',
-      strokeWidth: 2,
-      lineCap: 'round',
-      lineJoin: 'round'
-    })
-    close.add(hline)
-
-    let vline = new konva.Line({
-      points: [0, -lineRadius, 0, lineRadius],
-      stroke: '#ddd',
-      strokeWidth: 2,
-      lineCap: 'round',
-      lineJoin: 'round'
-    })
-    close.add(vline)
-    close.setAttr('pid', opt.uid)
-    close.on('mousedown', opt.action)
-    return close
   }
 
   /**

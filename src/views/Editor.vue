@@ -5,7 +5,8 @@
             <el-row>
                 <el-button-group>
                     <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
-                 </el-button-group>
+                    <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
+                </el-button-group>
             </el-row>
         </div>
     </div>
@@ -79,7 +80,15 @@
         height: this.size.height
       })
 
-      
+      this.scene.stage.addSelectorNode({
+      })
+      this.scene.stage.addSelectorNode({
+      })
+      this.scene.stage.addSequenceNode({
+      })
+       this.scene.stage.addTaskNode({
+      })
+
     }
   }
 </script>

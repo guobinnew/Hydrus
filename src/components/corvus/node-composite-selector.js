@@ -1,11 +1,16 @@
-import Konva from 'konva'
-import BTNode from './node'
-import Utils from './node-utils'
 import BTCompositeNode from './node-composite'
 
 class BTSelectorNode extends BTCompositeNode {
   constructor (config) {
-    super(config)
+    super(Object.assign({
+      title: {
+        type: 'selector',
+        icon: 'selector',
+        name: 'Selector',
+        fill: '#2E8B57',
+        subtitles: ['selector']
+      }
+    }, config))
   }
 }
 

@@ -10,14 +10,15 @@ class BTEntityNode extends BTNode {
     super(Aquila.Utils.lodash.merge({
       acceptDecorator: true,
       acceptService: true,
-      hasNext: true,
+      acceptChild: true,
       fill: '#483D8B',
       stroke: '#191970',
       title: {
-        type: 'entity',
-        x: Utils.node.margin
+        type: 'entity'
       }
     }, config))
+
+    console.log(this.config)
   }
 
   /**
@@ -49,10 +50,20 @@ class BTEntityNode extends BTNode {
    */
   createBody () {
     super.createBody()
+    this.body.x(Utils.node.margin)
     this.decorators = []
     this.services = []
+    this.children = []
 
-    if (this.config.hasNext) {
+    if (this.config.acceptChild) {
+      let width = this.background.width()
+      let height = this.background.height()
+      this.childZone = new Konva.Group({
+        x: width + Utils.node.childSpace.horizonal,
+        y: height / 2
+      })
+      this.root.add(this.childZone)
+
       this.expand = this.createExpandButton({
         size: 12,
         uid: this.config.uid,
@@ -63,7 +74,7 @@ class BTEntityNode extends BTNode {
 
     if (this.config.acceptDecorator) {
       this.decoratorZone = this.createDropZone({
-        x: Utils.zone.margin,
+        x: Utils.zone.padding,
         y: 2
       })
       this.body.add(this.decoratorZone)
@@ -78,9 +89,11 @@ class BTEntityNode extends BTNode {
     this.title = new BTLabelNode(this.config.title)
     this.body.add(this.title.node())
 
+    console.log(this.title)
+
     if (this.config.acceptService) {
       this.serviceZone = this.createDropZone({
-        x: Utils.zone.margin,
+        x: Utils.zone.padding,
         y: this.config.height - Utils.zone.height - 2
       })
       this.body.add(this.serviceZone)
@@ -97,15 +110,20 @@ class BTEntityNode extends BTNode {
    * 
    * @param {*} config 
    */
-  createDropZone(config) {
+  createDropZone (config) {
     let zone = new Konva.Rect({
       x: config.x,
       y: config.y,
-      width: this.config.width - 2 * Utils.zone.margin,
+      width: this.config.width - 2 * (Utils.zone.padding + Utils.node.margin),
       height: Utils.zone.height,
       fill: Utils.zone.fill,
       stroke: Utils.zone.fill,
       strokeWidth: 1
+    })
+
+    zone.on('mouseout', function () {
+      this.setAttr('fill', Utils.zone.fill)
+      this.getLayer().draw()
     })
 
     zone.on('mouseover', function () {
@@ -113,11 +131,6 @@ class BTEntityNode extends BTNode {
       this.getLayer().draw()
     })
 
-    zone.on('mouseout', function () {
-      this.setAttr('fill', Utils.zone.fill)
-      this.getLayer().draw()
-    })
-    
     return zone
   }
 
@@ -212,6 +225,37 @@ class BTEntityNode extends BTNode {
   addService (config) {
 
   }
+
+  /**
+   * 
+   * @param {*} node 
+   */
+  addChild (child) {
+    if (!child || !this.config.acceptChild) {
+      return
+    }
+    this.childZone.add(child.node())
+    this.children.push(child)
+    this.adjust({
+      downward: true
+    })
+    this.root.getLayer().draw()
+  }
+
+  /**
+   * 
+   * @param {*} node 
+   */
+  removeChild (node) {
+    return null
+  }
+
+  /**
+   * 
+   */
+  removeChildren () {
+    return []
+  }
  
   /**
    * 调整宽
@@ -224,7 +268,7 @@ class BTEntityNode extends BTNode {
     if (this.expand) {
       let width = this.background.width()
       let height = this.background.height()
-      // 调整close按钮
+      // 调整按钮
       this.expand.position({
         x: width,
         y: height / 2
@@ -232,11 +276,13 @@ class BTEntityNode extends BTNode {
     }
     
     if (w) {
-      this.decoratorZone && this.decoratorZone.width(w - 2 * Utils.zone.margin)
-      this.serviceZone && this.serviceZone.width(w - 2 * Utils.zone.margin)
+      let zoneWidth = w - 2 * (Utils.zone.padding + Utils.node.margin)
+      this.decoratorZone && this.decoratorZone.width(zoneWidth)
+      this.serviceZone && this.serviceZone.width(zoneWidth)
       for (let c of this.elements()) {
         c.resizeWidth(w - 2 * Utils.node.margin)
       }
+      this.childZone.x(w + Utils.node.childSpace.horizonal)
     }
   }
 
@@ -248,9 +294,33 @@ class BTEntityNode extends BTNode {
   }
 
   /**
+   * 获取包含子节点的高度
+   */
+  clientHeight () {
+    let childHeight = 0
+    for (let child of this.children) {
+      childHeight += child.clientHeight()
+      childHeight += Utils.node.childSpace.vertical
+    }
+    return Math.max(childHeight, this.background.height())
+  }
+  /**
    * 调整布局
    */
-  adjust () {
+  adjust (option) {
+    let opt = Aquila.Utils.lodash.merge({
+      downward: false,
+      upward: false
+    }, option)
+    // 调整子节点布局
+    if (opt.downward) {
+      for (let child of this.children) {
+        child.adjust({
+          downward: true
+        })
+      }
+    }
+
     // 计算宽高
     let needWidth = 0
     let offsetY = Utils.zone.height + 1 + Utils.node.space
@@ -262,6 +332,7 @@ class BTEntityNode extends BTNode {
       needWidth = Math.max(needWidth, bbox.width)
       offsetY += bbox.height + Utils.node.space
     }
+    offsetY -= Utils.node.space
 
     needWidth = Math.max(Utils.node.minWidth, needWidth + 2 * Utils.node.margin)
     let needHeight = Math.max(Utils.node.minHeight, offsetY + Utils.zone.height + 2)
@@ -270,6 +341,17 @@ class BTEntityNode extends BTNode {
     this.background.height(needHeight)
     this.serviceZone.y(needHeight - Utils.zone.height - 1)
     this.expand.y(needHeight / 2)
+    this.childZone.y(needHeight / 2)
+
+    // 调整子节点位置
+    if (opt.downward) {
+      console.log(this.config.name, this.clientHeight())
+      let offsetY = -this.clientHeight() / 2
+      for (let child of this.children) {
+        child.node().y(offsetY)
+        offsetY += (child.clientHeight() + Utils.node.childSpace.vertical)
+      }
+    }
   }
 }
 

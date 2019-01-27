@@ -12,7 +12,8 @@ class BTNode {
       stroke: '#000000',
       strokeWidth: 1,
       uid: uniqid(), // 自动生成
-      canClose: true
+      canClose: true,
+      canOrder: true
     },
     Aquila.Utils.common.clone(config))
 
@@ -23,6 +24,7 @@ class BTNode {
       name: 'node',
       id: this.config.uid
     })
+    this.root.setAttr('btnode', this)
 
     // 创建背景
     this.background = this.createBackground()
@@ -196,10 +198,24 @@ class BTNode {
   }
 
   /**
+   * 获取BTStage对象
+   */
+  getBTStage () {
+    return this.root.getStage().getAttr('btstage')
+  }
+
+  /**
    * 获取位置
    */
   position () {
     return this.root.position()
+  }
+
+  /**
+   * 
+   */
+  id () {
+    return this.root.id()
   }
 }
 

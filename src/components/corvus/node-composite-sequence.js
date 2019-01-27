@@ -1,11 +1,16 @@
-import Konva from 'konva'
-import BTNode from './node'
-import Utils from './node-utils'
 import BTCompositeNode from './node-composite'
 
 class BTSequenceNode extends BTCompositeNode {
   constructor (config) {
-    super(config)
+    super(Object.assign({
+      title: {
+        type: 'sequence',
+        icon: 'sequence',
+        name: 'Sequence',
+        fill: '#A0522D',
+        subtitles: ['sequence']
+      }
+    }, config))
   }
 }
 

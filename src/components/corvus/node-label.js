@@ -11,7 +11,7 @@ class BTLabelNode extends BTNode {
       type: 'label',
       name: '',
       icon: 'default',
-      subtitles: []
+      subtitles: ['']
     }, config))
   }
 
@@ -23,10 +23,15 @@ class BTLabelNode extends BTNode {
 
     console.log('LABEL====', this.config)
 
+    let path = Utils.svg[this.config.icon]
+    if (!path) {
+      path = Utils.svg.default
+    }
+
     let logo = new Konva.Path({
       x: 4,
       y: 4,
-      data: Utils.svg[this.config.icon],
+      data: path,
       fill: '#dddddd'
     })
     logo.scaleX(Utils.label.iconSize * 1.0 / Utils.svg.baseSize)
