@@ -8,10 +8,12 @@ class BTRootNode extends BTEntityNode {
   constructor (config) {
     super(Object.assign({
       acceptDecorator: false,
+      canMove: false,
       title: {
         type: 'root',
         icon: 'root',
-        name: 'Root'
+        name: 'Root',
+        subtitles: ['root']
       }
     }, config))
   }

@@ -5,6 +5,7 @@ import Utils from './node-utils'
 class BTTaskNode extends BTEntityNode {
   constructor (config) {
     super(Object.assign({
+      acceptChild: false,
       title: {
         type: 'task',
         icon: 'task',

@@ -1,40 +1,39 @@
 <template>
-    <div class="container" v-resize="onContainerResize">
-        <div id="scene"></div>
-        <div class="menu">
-            <el-row>
-                <el-button-group>
-                    <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
-                    <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
-                </el-button-group>
-            </el-row>
-        </div>
+  <div class="container" v-resize="onContainerResize">
+    <div id="scene"></div>
+    <div class="menu">
+      <el-row>
+        <el-button-group>
+          <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
+        </el-button-group>
+      </el-row>
     </div>
+  </div>
 </template>
 
 <style scoped>
-    .container {
-        overflow: hidden;
-        height: 100%;
-        line-height: 40px;
-    }
+.container {
+  overflow: hidden;
+  height: 100%;
+  line-height: 40px;
+}
 
-    #scene {
-        width: 100%;
-        height: 100%;
-        background-color: #fff;
-    }
+#scene {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
 
-    .menu {
-        position: absolute;
-        top: 0;
-        left: 0;
-        overflow: visible;
-        text-align: left;
-        margin-left: 100px;
-        margin-top: 10px;
-    }
-
+.menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  text-align: left;
+  margin-left: 100px;
+  margin-top: 10px;
+}
 </style>
 
 <script>
@@ -67,6 +66,38 @@
       },
       zoomIn(){
 
+      },
+      test(){
+        let sel1 = this.scene.stage.addSelectorNode()
+
+        let dec = sel1.addDecorator({
+          name: 'AAA',
+          subtitles: ['zzzz']
+        })
+    
+        let dec2 = sel1.addDecorator({
+          name: 'AAA',
+          subtitles: ['zzzz']
+        })
+   
+        let ser = sel1.addService({
+          name: 'BBB',
+          subtitles: ['xxzz: sdfsf']
+        })
+    
+        this.scene.stage.addSelectorNode({
+          parent: sel1.id()
+        })
+        this.scene.stage.addSequenceNode({
+          parent: sel1.id()
+        })
+
+        let sel2 = this.scene.stage.addSelectorNode()
+        this.scene.stage.addTaskNode({
+          parent: sel2.id()
+        })
+
+        this.scene.stage.addParallelNode()
       }
     },
     mounted: function () {
@@ -80,14 +111,9 @@
         height: this.size.height
       })
 
-      this.scene.stage.addSelectorNode({
-      })
-      this.scene.stage.addSelectorNode({
-      })
-      this.scene.stage.addSequenceNode({
-      })
-       this.scene.stage.addTaskNode({
-      })
+    
+      // 测试
+      this.test()
 
     }
   }

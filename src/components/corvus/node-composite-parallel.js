@@ -1,11 +1,16 @@
-import Konva from 'konva'
-import BTNode from './node'
-import Utils from './node-utils'
 import BTCompositeNode from './node-composite'
 
 class BTParallelNode extends BTCompositeNode {
   constructor (config) {
-    super(config)
+    super(Object.assign({
+      title: {
+        type: 'parallel',
+        icon: 'parallel',
+        name: 'Parallel',
+        fill: '#EE2C2C',
+        subtitles: ['parallel']
+      }
+    }, config))
   }
 }
 

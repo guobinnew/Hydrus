@@ -11,16 +11,20 @@ class BTNode {
       fill: '#ffffff',
       stroke: '#000000',
       strokeWidth: 1,
+      dragDistance: Utils.node.dragDistance,
       uid: uniqid(), // 自动生成
       canClose: true,
-      canOrder: true
+      canOrder: true,
+      canMove: true
     },
     Aquila.Utils.common.clone(config))
 
+    this.isSelected = false
     this.root = new Konva.Group({
       x: this.config.x,
       y: this.config.y,
-      draggable: false,
+      draggable: this.config.canMove,
+      dragDistance: this.config.dragDistance,
       name: 'node',
       id: this.config.uid
     })
@@ -72,6 +76,27 @@ class BTNode {
       name: 'node-body'
     })
     this.root.add(this.body)
+  }
+
+  /**
+   * 获取父节点
+   */
+  parent () {
+    let p = this.root.getParent()
+    while (p) {
+      if (p.hasName('node')) {
+        break
+      }
+      p = p.getParent()
+    }
+    return p ? p.getAttr('btnode') : null
+  }
+
+  /**
+   * 从父节点删除
+   */
+  remove () {
+
   }
 
   /**
@@ -181,13 +206,29 @@ class BTNode {
   /**
    * 调整布局
    */
-  adjust () {
+  adjust (option) {
     let needWidth = Utils.node.minWidth
     let bbox = this.body.getClientRect()
     needWidth = Math.max(needWidth, bbox.width)
 
     this.resizeWidth(needWidth)
     this.background.height(bbox.height + 8)
+  }
+
+  /**
+   * 
+   * @param {*} flag 
+   */
+  selected (flag) {
+    this.isSelected = flag
+    this.background.strokeWidth(this.isSelected ? 2 : 1)
+    this.background.stroke(this.isSelected ? Utils.node.highlight : this.config.stroke)
+  }
+  /**
+   *  刷新
+   */
+  refresh () {
+    this.root.getLayer().draw()
   }
 
   /**
@@ -216,6 +257,14 @@ class BTNode {
    */
   id () {
     return this.root.id()
+  }
+
+  /**
+   * 
+   * @param {*} show 
+   */
+  visible (show) {
+    return this.root.visible(show)
   }
 }
 

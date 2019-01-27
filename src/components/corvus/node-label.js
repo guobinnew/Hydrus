@@ -4,15 +4,46 @@ import BTNode from './node'
 import Utils from './node-utils'
 
 class BTLabelNode extends BTNode {
-  constructor (config) {
+  constructor(config) {
     super(Aquila.Utils.lodash.merge({
       fill: '#1296db',
       canClose: false,
+      canMove: false,
+      canDrop: false,
       type: 'label',
       name: '',
       icon: 'default',
-      subtitles: ['']
+      subtitles: []
     }, config))
+
+    // 投放区
+    let width = this.background.width()
+    this.isDropping = false
+    if (this.config.canDrop) {
+      this.dropZone = this.createDropZone({
+        x: 0,
+        y: -Utils.label.dropHeight - 2,
+        width: width,
+        height: Utils.label.dropHeight
+      })
+      this.dropZone.visible(false)
+      this.root.add(this.dropZone)
+    }
+  }
+
+   /**
+   * 
+   * @param {*} config 
+   */
+  createDropZone (config) {
+    let zone = new Konva.Rect({
+      x: config.x,
+      y: config.y,
+      width: config.width,
+      height: config.height,
+      fill: Utils.zone.highlight
+    })
+    return zone
   }
 
   /**
@@ -20,8 +51,6 @@ class BTLabelNode extends BTNode {
    */
   createBody () {
     super.createBody()
-
-    console.log('LABEL====', this.config)
 
     let path = Utils.svg[this.config.icon]
     if (!path) {
@@ -32,7 +61,8 @@ class BTLabelNode extends BTNode {
       x: 4,
       y: 4,
       data: path,
-      fill: '#dddddd'
+      fill: '#dddddd',
+      draggable: false
     })
     logo.scaleX(Utils.label.iconSize * 1.0 / Utils.svg.baseSize)
     logo.scaleY(Utils.label.iconSize * 1.0 / Utils.svg.baseSize)
@@ -43,23 +73,68 @@ class BTLabelNode extends BTNode {
       y: 8,
       text: this.config.name,
       fontSize: Utils.label.fontSize,
-      fill: '#fff'
+      fill: '#fff',
+      draggable: false
     })
     this.body.add(title)
 
     let offsetY = Utils.label.space + Utils.label.iconSize
+    if (this.config.subtitles.length === 0) {
+      this.config.subtitles.push('')
+    }
+    console.log(this.config.subtitles)
     for (let sub of this.config.subtitles) {
       let subtitle = new Konva.Text({
         x: 6,
         y: offsetY,
         text: sub,
         fontSize: Utils.label.subFontSize,
-        fill: '#fff'
+        fill: '#fff',
+        draggable: false
       })
       this.body.add(subtitle)
       offsetY += 12 + Utils.label.space
     }
     this.root.add(this.body)
+  }
+
+  /**
+   * 
+   * @param {*} flag 
+   */
+  setDropping (flag) {
+    if (!this.config.canDrop) {
+      return
+    }
+    this.isDropping = flag
+    this.dropZone.visible(this.isDropping)
+    this.refresh()
+  }
+
+  /**
+   * 获取包含子节点的高度
+   */
+  clientHeight () {
+    return this.background.height()
+  }
+
+  /**
+   * 获取包含子节点的高度
+   */
+  clientWidth () {
+    return this.background.width()
+  }
+
+  /**
+   * 调整宽
+   * @param {*} w 
+   */
+  resizeWidth (w) {
+    super.resizeWidth(w)
+
+    if (w) {
+      this.dropZone && this.dropZone.width(w)
+    }
   }
 }
 
