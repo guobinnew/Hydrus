@@ -64,6 +64,14 @@ class BTEntityNode extends BTNode {
       })
       this.root.add(this.childZone)
 
+      // 连线组
+      this.links = []
+      this.linkZone = new Konva.Group({
+        x: width,
+        y: height / 2
+      })
+      this.root.add(this.linkZone)
+
       this.isExpanding = true
       this.expand = this.createExpandButton({
         size: 12,
@@ -90,8 +98,6 @@ class BTEntityNode extends BTNode {
 
     this.title = new BTLabelNode(this.config.title)
     this.body.add(this.title.node())
-
-    console.log(this.title)
 
     if (this.config.acceptService) {
       this.serviceZone = this.createDropZone({
@@ -258,7 +264,7 @@ class BTEntityNode extends BTNode {
     this.adjust({
       downward: true
     })
-    this.root.getLayer().draw()
+    this.refresh()
   }
 
   /**
@@ -271,10 +277,25 @@ class BTEntityNode extends BTNode {
     }
     this.childZone.add(child.node())
     this.children.push(child)
+
+    let link = new Konva.Arrow({
+      x: 0,
+      y: 0,
+      points: [0, 0, 25, 0, Utils.node.space.horizonal, 0],
+      pointerLength: 8,
+      pointerWidth: 8,
+      fill: '#1c1c1c',
+      stroke: '#1c1c1c',
+      strokeWidth: 4,
+      tension: 0.5
+    })
+    this.linkZone.add(link)
+    this.links.push(link)
+
     this.adjust({
       downward: true
     })
-    this.root.getLayer().draw()
+    this.refresh()
   }
 
   /**
@@ -349,6 +370,7 @@ class BTEntityNode extends BTNode {
         c.resizeWidth(w - 2 * Utils.node.margin)
       }
       this.childZone && this.childZone.x(w + Utils.node.childSpace.horizonal)
+      this.linkZone && this.linkZone.x(w)
     }
   }
 
@@ -367,8 +389,10 @@ class BTEntityNode extends BTNode {
     for (let child of this.children) {
       child.visible(flag)
     }
-    console.log('expandChildren', flag)
-    this.root.getLayer().draw()
+    for (let link of this.links) {
+      link.visible(flag)
+    }
+    this.refresh()
   }
 
   /**
@@ -426,14 +450,20 @@ class BTEntityNode extends BTNode {
     this.serviceZone && this.serviceZone.y(needHeight - Utils.zone.height - 2)
     this.expand && this.expand.y(needHeight / 2)
     this.childZone && this.childZone.y(needHeight / 2)
+    this.linkZone && this.linkZone.y(needHeight / 2)
 
     // 调整子节点位置
     if (opt.downward) {
-      console.log(this.config.name, this.clientHeight())
       let offsetY = -this.clientHeight() / 2
-      for (let child of this.children) {
+      for (let i = 0; i < this.children.length; i++) {
+        let child = this.children[i]
+        let childHeight = child.clientHeight()
+        let link = this.links[i]
         child.node().y(offsetY)
-        offsetY += (child.clientHeight() + Utils.node.childSpace.vertical)
+        // 调整连线
+        let anchorY = offsetY + childHeight / 2
+        link.points([0, 0, 25, anchorY * 3 / 4, Utils.node.childSpace.horizonal, anchorY])
+        offsetY += (childHeight + Utils.node.childSpace.vertical)
       }
     }
   }

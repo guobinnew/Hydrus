@@ -98,6 +98,7 @@
         })
 
         this.scene.stage.addParallelNode()
+
       }
     },
     mounted: function () {

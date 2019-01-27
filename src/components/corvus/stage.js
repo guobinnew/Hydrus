@@ -124,6 +124,29 @@ class BTStage {
       let target = evt.target
     })
 
+    // let lines = [
+    //   [0, 0, 25, 75,  100, 100],
+    //   [0, 0, 25, 200 - 200/4,  100, 200],
+    //   [0, 0, 25, 300 - 300/4,  100, 300],
+    //   [0, 0, 25, 400 - 400/4,  100, 400],
+    //   [0, 0, 25, 500 - 500/4,  100, 500]
+    // ]
+
+    // for (let l of lines) {
+    //   var arrow = new Konva.Arrow({
+    //     x: 100,
+    //     y: 100,
+    //     points: l,
+    //     pointerLength: 10,
+    //     pointerWidth: 10,
+    //     fill: 'black',
+    //     stroke: 'black',
+    //     strokeWidth: 4,
+    //     tension: 0.5
+    //   })
+    //   this.layers.model.add(arrow)
+    // }
+
     this.update()
   }
 

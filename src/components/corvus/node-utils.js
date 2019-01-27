@@ -6,7 +6,7 @@ const Utils = {
     margin: 10,
     space: 6,
     childSpace: {
-      horizonal: 80,
+      horizonal: 100,
       vertical: 20
     },
     dragDistance: 40,
