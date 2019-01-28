@@ -5,7 +5,7 @@
       <el-row>
         <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
-          <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="zoomOut">Zoom Out</el-button>
         </el-button-group>
       </el-row>
     </div>
@@ -65,23 +65,26 @@
         this.scene.stage.resize(this.size.width, this.size.height)
       },
       zoomIn(){
-
+        this.scene.stage.zoomIn()
+      },
+      zoomOut(){
+        this.scene.stage.zoomOut()
       },
       test(){
         let sel1 = this.scene.stage.addSelectorNode()
 
         let dec = sel1.addDecorator({
-          name: 'AAA',
+          title: 'AAA',
           subtitles: ['zzzz']
         })
     
         let dec2 = sel1.addDecorator({
-          name: 'AAA',
-          subtitles: ['zzzz']
+          title: 'CCC',
+          subtitles: ['cccccc:sdffd']
         })
    
         let ser = sel1.addService({
-          name: 'BBB',
+          title: 'BBB',
           subtitles: ['xxzz: sdfsf']
         })
     
@@ -112,7 +115,6 @@
         height: this.size.height
       })
 
-    
       // 测试
       this.test()
 

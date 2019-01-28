@@ -1,15 +1,16 @@
+import Aquila from '../aquila/index'
 import Konva from 'konva'
 import BTEntityNode from './node-entity'
 import Utils from './node-utils'
 
 class BTTaskNode extends BTEntityNode {
   constructor (config) {
-    super(Object.assign({
+    super(Aquila.Utils.lodash.merge({
       acceptChild: false,
+      type: 'task',
       title: {
-        type: 'task',
         icon: 'task',
-        name: 'Task',
+        title: 'Task',
         fill: '#6A5ACD',
         subtitles: ['task']
       }

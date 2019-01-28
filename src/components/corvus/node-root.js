@@ -1,4 +1,5 @@
 
+import Aquila from '../aquila/index'
 import Konva from 'konva'
 import BTEntityNode from './node-entity'
 import Utils from './node-utils'
@@ -6,13 +7,13 @@ import { AST_Return } from 'terser';
 
 class BTRootNode extends BTEntityNode {
   constructor (config) {
-    super(Object.assign({
+    super(Aquila.Utils.lodash.merge({
       acceptDecorator: false,
       canMove: false,
+      type: 'root',
       title: {
-        type: 'root',
         icon: 'root',
-        name: 'Root',
+        title: 'Root',
         subtitles: ['root']
       }
     }, config))

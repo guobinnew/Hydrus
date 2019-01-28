@@ -4,7 +4,12 @@ import BTEntityNode from './node-entity'
 
 class BTCompositeNode extends BTEntityNode {
   constructor (config) {
-    super(config)
+    super(Aquila.Utils.lodash.merge({
+      type: 'composite',
+      names: {
+        composite: true
+      }
+    }, config))
   }
 }
 

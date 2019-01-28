@@ -1,12 +1,13 @@
+import Aquila from '../aquila/index'
 import BTCompositeNode from './node-composite'
 
 class BTParallelNode extends BTCompositeNode {
   constructor (config) {
-    super(Object.assign({
+    super(Aquila.Utils.lodash.merge({
+      type: 'parallel',
       title: {
-        type: 'parallel',
         icon: 'parallel',
-        name: 'Parallel',
+        title: 'Parallel',
         fill: '#EE2C2C',
         subtitles: ['parallel']
       }

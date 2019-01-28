@@ -5,7 +5,6 @@ import Utils from './node-utils'
 import BTLabelNode from './node-label'
 import BTDecoratorNode from './node-decorator'
 import BTServiceNode from './node-service'
-import BTLabelMarkerNode from './node-marker'
 
 class BTEntityNode extends BTNode {
   constructor (config) {
@@ -15,9 +14,10 @@ class BTEntityNode extends BTNode {
       acceptChild: true,
       fill: '#483D8B',
       stroke: '#191970',
-      title: {
-        type: 'entity'
-      }
+      title: {},
+      type: 'entity',
+      names: { entity: true },
+      canMove: true
     }, config))
   }
 
@@ -63,6 +63,15 @@ class BTEntityNode extends BTNode {
         y: height / 2
       })
       this.root.add(this.childZone)
+      this.childZoneMarker = new Konva.Rect({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 8,
+        fill: Utils.zone.highlight,
+        visible: false
+      })
+      this.childZone.add(this.childZoneMarker)
 
       // 连线组
       this.links = []
@@ -85,7 +94,7 @@ class BTEntityNode extends BTNode {
       this.decoratorZone = this.createDropZone({
         x: Utils.zone.padding,
         y: 2,
-        drop: 'decorator'
+        acceptTypes: ['decorator']
       })
       this.body.add(this.decoratorZone)
     }
@@ -96,14 +105,17 @@ class BTEntityNode extends BTNode {
       }
     }
 
-    this.title = new BTLabelNode(this.config.title)
-    this.body.add(this.title.node())
+    this.title = new BTLabelNode(Aquila.Utils.lodash.merge({
+      canMove: false,
+      names: { entitylabel: true }
+    }, this.config.title))
+    this.body.add(this.title.knode())
 
     if (this.config.acceptService) {
       this.serviceZone = this.createDropZone({
         x: Utils.zone.padding,
         y: this.config.height - Utils.zone.height - 2,
-        drop: 'decorator'
+        acceptTypes: ['service']
       })
       this.body.add(this.serviceZone)
     }
@@ -121,6 +133,7 @@ class BTEntityNode extends BTNode {
    */
   createDropZone (config) {
     let zone = new Konva.Rect({
+      name: 'dropzone',
       x: config.x,
       y: config.y,
       width: this.config.width - 2 * (Utils.zone.padding + Utils.node.margin),
@@ -130,20 +143,44 @@ class BTEntityNode extends BTNode {
       strokeWidth: 1
     })
     // 接受的drop类型
-    zone.setAttr('btdrop', config.drop)
+    zone.setAttr('@types', config.acceptTypes)
 
-    zone.on('mouseout', function () {
-      this.setAttr('fill', Utils.zone.fill)
-      this.getLayer().draw()
-    })
+    // zone.on('mouseout', function () {
+    //   this.setAttr('fill', Utils.zone.fill)
+    //   this.getLayer().draw()
+    // })
 
-    zone.on('mouseover', function () {
-      this.setAttr('fill', Utils.zone.highlight)
-      this.getLayer().draw()
-    })
+    // zone.on('mouseover', function () {
+    //   this.setAttr('fill', Utils.zone.highlight)
+    //   this.getLayer().draw()
+    // })
+
+    zone.canDrop = function (type) {
+      let arr = zone.getAttr('@types')
+      return arr.indexOf(type) >= 0
+    }
+  
+    zone.setDropping = function (flag) {
+      zone.setAttr('fill', flag ? Utils.zone.highlight : Utils.zone.fill)
+      zone.getLayer().draw()
+    }
 
     return zone
   }
+
+  /**
+   * 
+   * @param {*} index int -1 表示隐藏 
+   */
+  setChildDropping (index) {
+    if (!this.config.acceptChild) {
+      return
+    }
+   
+    this.dropZone.visible(this.isDropping)
+    this.refresh()
+  }
+
 
     /**
    * 创建expand按钮
@@ -204,7 +241,7 @@ class BTEntityNode extends BTNode {
       lineJoin: 'round'
     })
     expand.add(vline)
-    expand.setAttr('pid', opt.uid)
+    expand.setAttr('@pid', opt.uid)
     expand.on('mousedown', opt.action)
 
     expand.on('mouseout', function () {
@@ -228,7 +265,7 @@ class BTEntityNode extends BTNode {
    */
   addDecorator (config, index = -1) {
     let dec = new BTDecoratorNode(config)
-    this.body.add(dec.node())
+    this.body.add(dec.knode())
     this.decorators.splice(index, 0, dec)
     this.adjust({
       downward: true
@@ -244,7 +281,7 @@ class BTEntityNode extends BTNode {
    */
   addService (config, index = -1) {
     let ser = new BTServiceNode(config)
-    this.body.add(ser.node())
+    this.body.add(ser.knode())
     this.services.splice(index, 0, ser)
     this.adjust({
       downward: true
@@ -255,11 +292,34 @@ class BTEntityNode extends BTNode {
 
   /**
    * 
+   */
+  replaceDecorator (dec, replacer) {
+    //if ()
+    //int index = this.decorators.indexOf(dec)
+  }
+
+  /**
+   * 
+   */
+  replaceService (ser, replacer) {
+
+  }
+
+  /**
+   * 
+   */
+  replaceChild (child, replacer) {
+
+  }
+
+  /**
+   * 
+   * @param {*} marker
    * @param {*} index 
    */
-  addMarker (label, index = -1) {
-    let marker = new BTLabelMarkerNode(label)
-    this.body.add(marker.node())
+  exchangeMarker (host, marker, shadow = true) {
+
+    this.body.add(marker.knode())
     this.services.splice(index, 0, marker)
     this.adjust({
       downward: true
@@ -275,7 +335,7 @@ class BTEntityNode extends BTNode {
     if (!child || !this.config.acceptChild) {
       return
     }
-    this.childZone.add(child.node())
+    this.childZone.add(child.knode())
     this.children.push(child)
 
     let link = new Konva.Arrow({
@@ -308,6 +368,57 @@ class BTEntityNode extends BTNode {
   }
 
   /**
+   * 判断插入位置
+   * @param point // 画布点坐标
+   * @return int 返回插入索引 -1 表示不能插入
+   */
+  intersection (point) {
+    let width = this.background.width()
+    let pos = this.root.getAbsolutePosition()
+    let zoom = this.stage().zoom
+    let zone = {
+      left: pos.x + width * zoom,
+      right: pos.x + (width + Utils.node.childSpace.horizonal) * zoom
+    }
+
+    console.log(point, pos, zone)
+
+    if (point.x < zone.left || point.x > zone.right) {
+      return -1
+    }
+
+    let zoneHeight = 0
+    let childHeights = []
+    let allowance = 0
+    for (let child of this.children) {
+      let h = child.clientHeight()
+      childHeights.push(h / 2 + allowance)
+      allowance = h / 2 + Utils.node.childSpace.vertical
+      zoneHeight += (h + Utils.node.childSpace.vertical)
+    }
+    childHeights.push(allowance)
+    zoneHeight -= Utils.node.childSpace.vertical
+
+    let height = this.background.height()
+    zoneHeight = Math.max(height, zoneHeight)
+    
+    let index = -1
+    let offsetY = pos.y + (height - zoneHeight) / 2 * zoom
+    for (let i = 0; i < childHeights.length; i++) {
+      if ((i === 0) && point.y < offsetY) {
+        break
+      }
+      offsetY += (childHeights[i] * zoom)
+      if (point.y < offsetY) {
+        index = i
+        break
+      }
+    }
+
+    return index
+  }
+
+  /**
    * 
    */
   indexOfElement (node) {
@@ -329,6 +440,7 @@ class BTEntityNode extends BTNode {
     return -1
   }
 
+  
   /**
    * 
    * @param {*} child 
@@ -375,15 +487,16 @@ class BTEntityNode extends BTNode {
   }
 
   /**
-   * 
+   * 切换子节点展开/收起
    */
   toggleExpand () {
     this.isExpanding = !this.isExpanding
     this.expandChildren(this.isExpanding)
   }
+
   /**
-   * 
-   * @param {*} flag 
+   * 展开/收起子节点
+   * @param {*} flag boolean
    */
   expandChildren (flag = true) {
     for (let child of this.children) {
@@ -436,7 +549,7 @@ class BTEntityNode extends BTNode {
     let offsetY = Utils.zone.height + 2 + Utils.node.space
     //
     for (let elem of this.elements()) {
-      elem.node().y(offsetY)
+      elem.knode().y(offsetY)
       elem.adjust()
       needWidth = Math.max(needWidth, elem.clientWidth())
       offsetY += (elem.clientHeight() + Utils.node.space)
@@ -459,7 +572,7 @@ class BTEntityNode extends BTNode {
         let child = this.children[i]
         let childHeight = child.clientHeight()
         let link = this.links[i]
-        child.node().y(offsetY)
+        child.knode().y(offsetY)
         // 调整连线
         let anchorY = offsetY + childHeight / 2
         link.points([0, 0, 25, anchorY * 3 / 4, Utils.node.childSpace.horizonal, anchorY])

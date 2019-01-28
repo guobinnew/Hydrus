@@ -1,6 +1,6 @@
 import Aquila from '../aquila/index'
 import Konva from 'konva'
-import uniqid from 'uniqid'
+import Utils from './node-utils'
 import BTEntityNode from './node-entity'
 import BTRootNode from './node-root'
 import BTSelectorNode from './node-composite-selector'
@@ -8,34 +8,46 @@ import BTSequenceNode from './node-composite-sequence'
 import BTParallelNode from './node-composite-parallel'
 import BTTaskNode from './node-task'
 import BTLabelNode from './node-label'
-import BTMarkerNode from './node-marker'
 
 /**
  * 编辑面板
  */
 class BTStage {
-  constructor(options) {
+  constructor (options) {
     this.options = {
       draggable: true,
       canZoom: true
     }
-    _.merge(this.options, options)
+    Aquila.Utils.lodash.merge(this.options, options)
     this.stage = new Konva.Stage(this.options)
-    this.stage.setAttr('btstage', this)
+    this.stage.setAttr('@stage', this)
 
     this.layers = {}
     // 创建图层
-    this.modelIndex = {}
     this.layers.model = new Konva.Layer()
     this.stage.add(this.layers.model)
-
     // 拖放层
-    this.marker = new BTMarkerNode()
-    this.marker.visible(false)
-
-    this.dragNode = null
     this.layers.drag = new Konva.Layer()
     this.stage.add(this.layers.drag)
+
+    // 当前拖放的节点
+    this.isDraging = false
+    this.dragMarker = new Konva.Group({
+      name: 'dragmarker',
+      draggable: true,
+      visible: false
+    })
+    this.layers.drag.add(this.dragMarker)
+    this.dropMarker = new Konva.Rect({
+      name: 'dropmarker',
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      fill: Utils.zone.highlight,
+      visible: false
+    })
+    this.layers.drag.add(this.dropMarker)
 
     // 是否被修改
     this.modified = false
@@ -60,100 +72,170 @@ class BTStage {
 
     // 当前选中的节点
     this.select = null
+    this.selectPos = null
 
     // 根节点
     this.addRootNode()
 
     // 鼠标事件
-    let stage = this
     this.stage.on('mousedown', (evt) => {
       let shape = evt.target
       let node = this.findNodeParent(shape)
+      if (node && node.nodeType() === 'label') {
+        node = node.parent()
+      }
+
       if (this.select !== node) {
         if (this.select) {
           this.select.selected(false)
         }
-        if (node) {
-          this.select = node
+        this.select = node
+        if (this.select) {
+          this.selectPos = this.stage.getPointerPosition()
           this.select.selected(true)
         }
       }
+      // 判断是否可拖放
+      if (this.select && this.select.canMove() && evt.evt.button == 0) {
+        this.dragMarker.setAttr('@drag', this.select)
+        this.isDraging = false
+      }
+
+      console.log('mousedown', this.isDraging)
+
+      this.refresh()
     })
 
     this.stage.on('mouseup', (evt) => {
       let shape = evt.target
-     
+      console.log('mouseup', this.isDraging)
+      if (!this.isDraging) {
+        this.isDraging = false
+        this.dragMarker.setAttr('@drag', null)
+      }
     })
 
     this.stage.on('mousemove', (evt) => {
-      stage.mousePos = stage.stage.getPointerPosition()
+      this.mousePos = this.stage.getPointerPosition()
+      console.log('mousemove')
+      let drag = this.dragMarker.getAttr('@drag')
+      if (drag && !this.isDraging) {
+        console.log('mousemove---startdrag', drag)
+        this.isDraging = true
+        this.dragMarker.startDrag()
+      }
     })
 
     this.stage.on('dragstart', (evt) => {
-      if (stage.isLinking) {
-        return
-      }
-      let target = evt.target
-      if (target instanceof BTLabelNode) {
-        let label = target
-        let node = label.getAttr('btnode')
-        let parent = node.parent()
-        if (parent) {
-          this.marker.shadow(label)
-          let index = parent.indexOfElement(node)
+      let shape = evt.target
 
-
-        }
-
-        this.layers.drag.add(label)
-       
-      } else if (target instanceof BTEntityNode) {
-
-      }
     })
 
     this.stage.on('dragmove', (evt) => {
-      
-      let target = evt.target
-      if (target instanceof Konva.Group) {
-        let group = target
+      console.log('dragmove', evt)
+      if (evt.target instanceof Konva.Stage) {
+        return
+      }
+
+      this.mousePos = this.stage.getPointerPosition()
+      let shape = this.stage.getIntersection(this.mousePos)
+      if (shape instanceof Konva.Arrow) {
+        shape = null
+      }
+      let node = this.findNodeParent(shape)
+
+      let drag = this.dragMarker.getAttr('@drag')
+      let dragtype = drag.nodeType()
+
+      // 进行预处理
+      let drop = {}
+      if (node === drag) {} else {
+        if (shape) {
+          console.log('xxxxxxx', shape, node)
+          if (shape.hasName('dropzone') && shape.canDrop(dragtype)) { // 节点内部投放区域
+            drop.type = 'dropzone'
+            drop.zone = shape
+            drop.node = node
+          } else if (node.isType('accessory') && node.canDrop(dragtype)) {
+            drop.type = 'accessory'
+            drop.node = node
+            drop.zone = node
+          }
+        } else if (drag.isType('entity')) { // 处理实体节点
+          
+          // 遍历实体
+          let nodes = this.layers.model.find('.entity')
+          for (let n of nodes) {
+            let entity = n.getAttr('@node')
+            let offset = this.stage.getAbsolutePosition()
+            let canvasPos = {
+              x: (this.mousePos.x - offset.x) / this.zoom,
+              y: (this.mousePos.y - offset.y) / this.zoom
+            }
+            console.log('drop-entity', this.mousePos, canvasPos)
+            let index = entity.intersection(this.mousePos)
+            if (index >= 0) {
+              drop.type = 'child'
+              drop.index = index
+              drop.node = entity
+              break
+            }
+          }
+        }
+
+        let oldDrop = this.dropMarker.getAttr('@drop')
+        console.log(oldDrop, drop)
+
+        if (oldDrop &&
+          oldDrop.type === drop.type &&
+          oldDrop.zone === drop.zone &&
+          oldDrop.node === drop.node) { // 完全相同
+        } else {
+          this.dropMarker.setAttr('@drop', drop)
+
+          if (oldDrop) {
+            if (oldDrop.zone) {
+              oldDrop.zone.setDropping(false)
+            } else if (oldDrop.index >= 0) {
+              oldDrop.node.setChildDropping(-1)
+            }
+          }
+
+          if (drop.zone) {
+            drop.zone.setDropping(true)
+          } else if (drop.index >= 0) {
+            drop.node.setChildDropping(drop.index)
+          }
+        }
       }
     })
 
     this.stage.on('dragend', (evt) => {
       let target = evt.target
+      console.log('dragend', this.isDraging)
+      if (this.isDraging) {
+        this.dragMarker.stopDrag()
+        // 执行拖放处理
+        let drop = this.dropMarker.getAttr('@drop')
+        console.log('drop---', drop)
+        if (drop) {
+          if (drop.zone) {
+            drop.zone.setDropping(false)
+          }
+        }
+        this.dragMarker.setAttr('@drag', null)
+        this.isDraging = false
+        this.dragMarker.stopDrag()
+      }
     })
 
-    // let lines = [
-    //   [0, 0, 25, 75,  100, 100],
-    //   [0, 0, 25, 200 - 200/4,  100, 200],
-    //   [0, 0, 25, 300 - 300/4,  100, 300],
-    //   [0, 0, 25, 400 - 400/4,  100, 400],
-    //   [0, 0, 25, 500 - 500/4,  100, 500]
-    // ]
-
-    // for (let l of lines) {
-    //   var arrow = new Konva.Arrow({
-    //     x: 100,
-    //     y: 100,
-    //     points: l,
-    //     pointerLength: 10,
-    //     pointerWidth: 10,
-    //     fill: 'black',
-    //     stroke: 'black',
-    //     strokeWidth: 4,
-    //     tension: 0.5
-    //   })
-    //   this.layers.model.add(arrow)
-    // }
-
-    this.update()
+    this.refresh()
   }
 
   /**
    * 缓冲快照
    */
-  snapshot() {
+  snapshot () {
 
     if (this.actions.length >= this.maxAction) {
       this.actions.splice(0, 1)
@@ -172,7 +254,7 @@ class BTStage {
   /**
    * 刷新显示
    */
-  update () {
+  refresh () {
     this.stage.draw()
   }
 
@@ -185,12 +267,13 @@ class BTStage {
     // 如果自己满足条件，返回自己
     let p = shape
     while (p) {
+      console.log('findNodeParent', p)
       if (p instanceof Konva.Group && p.hasName('node')) {
         break
       }
       p = p.getParent()
     }
-    return p ? p.getAttr('btnode') : null
+    return p ? p.getAttr('@node') : null
   }
 
   /**
@@ -201,12 +284,12 @@ class BTStage {
       x: this.stage.width() / 2,
       y: this.stage.height() / 2
     })
-    this.layers.model.add(this.root.node())
+    this.layers.model.add(this.root.knode())
   }
 
   /**
    * 添加Selector节点
-   * @param {*} config 
+   * @param {*} option
    */
   addSelectorNode (option) {
     let opt = Object.assign({}, option)
@@ -218,20 +301,19 @@ class BTStage {
 
   /**
    * 添加Sequence节点
-   * @param {*} config 
+   * @param {*} option
    */
   addSequenceNode (option) {
     let opt = Object.assign({}, option)
-
     let parent = this.getNode(opt.parent)
     let node = new BTSequenceNode(opt.config)
     parent.addChild(node)
     return node
   }
 
-   /**
+  /**
    * 添加Parallel节点
-   * @param {*} config 
+   * @param {*} option
    */
   addParallelNode (option) {
     let opt = Object.assign({}, option)
@@ -241,9 +323,9 @@ class BTStage {
     return node
   }
 
-   /**
+  /**
    * 添加Sequence节点
-   * @param {*} config 
+   * @param {*} option
    */
   addTaskNode (option) {
     let opt = Object.assign({}, option)
@@ -264,7 +346,7 @@ class BTStage {
         if (nodes.length !== 1) {
           Aquila.Logger.warn(`Stage::getNode - Node <${uid}> is not unique`)
         }
-        let node = nodes[0].getAttr('btnode')
+        let node = nodes[0].getAttr('@node')
         if (node instanceof BTEntityNode) {
           return node
         } else {
@@ -305,7 +387,7 @@ class BTStage {
       x: this.zoom,
       y: this.zoom
     })
-    this.update()
+    this.refresh()
   }
 
   zoomOut () {
@@ -317,7 +399,7 @@ class BTStage {
       x: this.zoom,
       y: this.zoom
     })
-    this.update()
+    this.refresh()
   }
 
   reset () {
@@ -330,7 +412,7 @@ class BTStage {
       x: 0,
       y: 0
     })
-    this.update()
+    this.refresh()
   }
 
   /**
@@ -348,12 +430,7 @@ class BTStage {
       this.actionIndex = -1
     }
 
-    for (let mid of Object.keys(this.modelIndex)) {
-      this.removeModel(mid)
-    }
-
-    this.modelIndex = {}
-    this.update()
+    this.refresh()
   }
 
   /**
@@ -374,7 +451,7 @@ class BTStage {
       this.snapshot()
     }
 
-    this.update()
+    this.refresh()
   }
 
   /**

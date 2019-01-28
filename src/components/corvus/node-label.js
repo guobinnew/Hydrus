@@ -4,15 +4,16 @@ import BTNode from './node'
 import Utils from './node-utils'
 
 class BTLabelNode extends BTNode {
-  constructor(config) {
+  constructor (config) {
     super(Aquila.Utils.lodash.merge({
       fill: '#1296db',
       canClose: false,
-      canMove: false,
+      canMove: true,
       canDrop: false,
       type: 'label',
-      name: '',
+      names: { label: true },
       icon: 'default',
+      title: '',
       subtitles: []
     }, config))
 
@@ -71,7 +72,7 @@ class BTLabelNode extends BTNode {
     let title = new Konva.Text({
       x: 32,
       y: 8,
-      text: this.config.name,
+      text: this.config.title,
       fontSize: Utils.label.fontSize,
       fill: '#fff',
       draggable: false
@@ -96,6 +97,14 @@ class BTLabelNode extends BTNode {
       offsetY += 12 + Utils.label.space
     }
     this.root.add(this.body)
+  }
+
+  /**
+   * 判断是否能够接受
+   * @param {*} type 
+   */
+  canDrop (type) {
+    return this.config.acceptTypes.indexOf(type) >= 0
   }
 
   /**

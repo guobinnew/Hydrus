@@ -12,23 +12,25 @@ class BTNode {
       stroke: '#000000',
       strokeWidth: 1,
       dragDistance: Utils.node.dragDistance,
-      uid: uniqid(), // 自动生成
+      uid: uniqid(), // 自动生成,
+      type: 'node',
+      names: { node: true },
       canClose: true,
       canOrder: true,
-      canMove: true
-    },
-    Aquila.Utils.common.clone(config))
-
+      canMove: false
+    }, config)
+ 
+    this.config.names[this.config.type] = true
     this.isSelected = false
     this.root = new Konva.Group({
       x: this.config.x,
       y: this.config.y,
-      draggable: this.config.canMove,
+      draggable: false,
       dragDistance: this.config.dragDistance,
-      name: 'node',
+      name: Object.keys(this.config.names).join(' '),
       id: this.config.uid
     })
-    this.root.setAttr('btnode', this)
+    this.root.setAttr('@node', this)
 
     // 创建背景
     this.background = this.createBackground()
@@ -89,7 +91,7 @@ class BTNode {
       }
       p = p.getParent()
     }
-    return p ? p.getAttr('btnode') : null
+    return p ? p.getAttr('@node') : null
   }
 
   /**
@@ -164,7 +166,7 @@ class BTNode {
       lineJoin: 'round'
     })
     close.add(vline)
-    close.setAttr('pid', opt.uid)
+    close.setAttr('@pid', opt.uid)
     close.on('mousedown', opt.action)
 
     close.on('mouseout', function () {
@@ -232,17 +234,40 @@ class BTNode {
   }
 
   /**
-   * Canvas节点
+   * 
    */
-  node () {
+  nodeType () {
+    return this.config.type
+  }
+
+  /**
+   * 判断类型
+   * @param {*} type 
+   */
+  isType (type) {
+    return this.root.hasName(type)
+  }
+
+
+  /**
+   * 
+   */
+  canMove () {
+    return this.config.canMove
+  }
+
+  /**
+   * knova节点
+   */
+  knode () {
     return this.root
   }
 
   /**
    * 获取BTStage对象
    */
-  getBTStage () {
-    return this.root.getStage().getAttr('btstage')
+  stage () {
+    return this.root.getStage().getAttr('@stage')
   }
 
   /**

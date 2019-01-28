@@ -1,12 +1,13 @@
+import Aquila from '../aquila/index'
 import BTCompositeNode from './node-composite'
 
 class BTSelectorNode extends BTCompositeNode {
   constructor (config) {
-    super(Object.assign({
+    super(Aquila.Utils.lodash.merge({
+      type: 'selector',
       title: {
-        type: 'selector',
         icon: 'selector',
-        name: 'Selector',
+        title: 'Selector',
         fill: '#2E8B57',
         subtitles: ['selector']
       }
