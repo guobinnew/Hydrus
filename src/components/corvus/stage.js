@@ -189,6 +189,7 @@ class BTStage {
         if (oldDrop &&
           oldDrop.type === drop.type &&
           oldDrop.zone === drop.zone &&
+          oldDrop.index === drop.index &&
           oldDrop.node === drop.node) { // 完全相同
         } else {
           this.dropMarker.setAttr('@drop', drop)
@@ -221,6 +222,8 @@ class BTStage {
         if (drop) {
           if (drop.zone) {
             drop.zone.setDropping(false)
+          } else if (drop.index >= 0) {
+            drop.node.setChildDropping(-1)
           }
         }
         this.dragMarker.setAttr('@drag', null)
@@ -236,7 +239,6 @@ class BTStage {
    * 缓冲快照
    */
   snapshot () {
-
     if (this.actions.length >= this.maxAction) {
       this.actions.splice(0, 1)
     }

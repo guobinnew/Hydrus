@@ -176,8 +176,25 @@ class BTEntityNode extends BTNode {
     if (!this.config.acceptChild) {
       return
     }
-   
-    this.dropZone.visible(this.isDropping)
+
+    if (index < 0) {
+      this.childZoneMarker.hide()
+    } else {
+      let i = (index >= this.children.length) ? this.children.length - 1 : index
+
+      console.log('setChildDropping', index, i)
+      // 计算位置和宽度
+      let child = this.children[i]
+      if (index >= this.children.length) {
+        this.childZoneMarker.y(child.position().y + child.size().height + (Utils.node.childSpace.vertical - 8) / 2)
+      } else {
+        this.childZoneMarker.y(child.position().y - (Utils.node.childSpace.vertical + 8) / 2)
+      }
+
+      this.childZoneMarker.width(child.size().width)
+      this.childZoneMarker.show()
+    }
+
     this.refresh()
   }
 

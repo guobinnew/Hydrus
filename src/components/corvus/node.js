@@ -280,6 +280,13 @@ class BTNode {
   /**
    * 
    */
+  size() {
+    return this.background.size()
+  }
+
+  /**
+   * 
+   */
   id () {
     return this.root.id()
   }
