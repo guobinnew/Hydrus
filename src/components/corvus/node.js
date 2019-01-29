@@ -225,7 +225,7 @@ class BTNode {
     let stage = this.stage()
     let zoom = stage ? stage.zoom : 1.0
     let bbox = this.body.getClientRect()
-    needWidth = Math.max(needWidth, bbox.width / zoom + 2 * Utils.node.margin)
+    needWidth = Math.max(needWidth, bbox.width / zoom)
 
     this.resizeWidth(needWidth)
     this.background.height(bbox.height / zoom + 8)
@@ -273,6 +273,16 @@ class BTNode {
       p = p.parent()
     }
     return l
+  }
+
+  /**
+   * 
+   */
+  toJson () {
+    return {
+      type: this.config.type,
+      config: this.config
+    }
   }
 
   /**

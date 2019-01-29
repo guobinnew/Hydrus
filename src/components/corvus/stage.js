@@ -15,7 +15,8 @@ class BTStage {
   constructor (options) {
     this.options = {
       draggable: true,
-      canZoom: true
+      canZoom: true,
+      canWheelZoom: true
     }
     Aquila.Utils.lodash.merge(this.options, options)
     this.stage = new Konva.Stage(this.options)
@@ -115,11 +116,11 @@ class BTStage {
       this.mousePos = this.stage.getPointerPosition()
       let drag = this.dragMarker.getAttr('@drag')
       if (drag && !this.isDraging) {
-        let dist = Math.sqrt(Math.pow(this.mousePos.x - this.selectPos.x, 2) + Math.pow(this.mousePos.y - this.selectPos.y, 2))
-        if (dist >= Utils.node.dragDistance) {
+        //let dist = Math.sqrt(Math.pow(this.mousePos.x - this.selectPos.x, 2) + Math.pow(this.mousePos.y - this.selectPos.y, 2))
+        //if (dist >= Utils.node.dragDistance) {
           this.isDraging = true
           this.dragMarker.startDrag()
-        }
+        //}
       }
     })
 
@@ -259,8 +260,8 @@ class BTStage {
       this.actions.splice(this.actionIndex + 1, this.actions.length - this.actionIndex - 1)
     }
 
-    let cache = this.saveToJson()
-    this.actions.push(cache)
+    //let cache = this.saveToJson()
+    //this.actions.push(cache)
     this.actionIndex = this.actions.length - 1
   }
 
@@ -428,6 +429,13 @@ class BTStage {
   }
 
   /**
+   * 获取当前选中节点，如果没有则返回根节点
+   */
+  selectedNode () {
+    return this.select ? this.select : this.root
+  }
+
+  /**
    * 清空编辑器，不能撤销
    * @param cache boolean 是否清除快照缓冲
    */
@@ -458,7 +466,7 @@ class BTStage {
    * 
    * @param {*} data 
    */
-  addEnity (data) {
+  createEntity (data) {
     if (!data || !data.type) {
       return null
     }
@@ -492,7 +500,7 @@ class BTStage {
     // 创建子节点
     if (data.children) {
       for (let child of data.children) {
-        let n = this.addEnity(child)
+        let n = this.createEntity(child)
         if (!n) {
           continue
         }
@@ -520,7 +528,7 @@ class BTStage {
     // 根节点
     let top = null
     if (data.root) {
-      top = this.addEnity(data.root)
+      top = this.createEntity(data.root)
       if (!top) {
         Aquila.Logger.error('BTStage::loadFromJson failed - data.root is currupted')
         return
@@ -547,7 +555,11 @@ class BTStage {
    */
   saveToJson () {
     let json = {}
-    return json
+    let top = this.root.children[0]
+    if (top) {
+      json.root = top.toJson()
+    }
+    return Aquila.Utils.common.clone(json)
   }
 
   /**

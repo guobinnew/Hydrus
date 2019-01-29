@@ -792,7 +792,6 @@ class BTEntityNode extends BTNode {
     if (opt.upward) {
       let p = this.parent()
       while (p) {
-        console.log('adjust upword', p)
         p.adjust()
         p = p.parent()
       }
@@ -833,6 +832,57 @@ class BTEntityNode extends BTNode {
     }
 
     this.adjust()
+  }
+
+
+  /**
+   * 
+   */
+  labelTitle () {
+    return this.config.label.title
+  }
+
+  /**
+   * 
+   */
+  toJson () {
+    let json = {
+      type: this.config.type,
+      config: this.config,
+      elements: [],
+      children: []
+    }
+    // Elements
+    for (let dec of this.decorators) {
+      console.log(dec)
+      json.elements.push(dec.toJson())
+    }
+
+    for (let ser of this.services) {
+      json.elements.push(ser.toJson())
+    }
+
+    // Children
+    for (let child of this.children) {
+      json.children.push(child.toJson())
+    }
+    return json
+  }
+
+  /**
+   * 
+   * @param {*} type 
+   */
+  canAcceptDecorator () {
+    return this.config.acceptDecorator
+  }
+
+  canAcceptService () {
+    return this.config.acceptService
+  }
+
+  canAcceptChild () {
+    return this.config.acceptChild
   }
 }
 

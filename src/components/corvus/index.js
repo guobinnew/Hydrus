@@ -10,6 +10,7 @@ const Corvus = {
    *    height: // canvas高度（必须有）
    *    draggable: false  // 是否允许内容拖放
    *    canZoom: true,  // 是否允许缩放
+   *    canWheelZoom: true // 是否允许滚轮缩放
    * }
    * @returns {Stage}
    */

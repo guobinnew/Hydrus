@@ -81,9 +81,8 @@ class BTLabelNode extends BTNode {
 
     let offsetY = Utils.label.space + Utils.label.iconSize
     if (this.config.subtitles.length === 0) {
-      this.config.subtitles.push('')
+      this.config.subtitles.push(this.config.type)
     }
-    console.log(this.config.subtitles)
     for (let sub of this.config.subtitles) {
       let subtitle = new Konva.Text({
         x: 6,
