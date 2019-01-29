@@ -391,42 +391,94 @@ class BTEntityNode extends BTNode {
    * 
    */
   insertService (ser, index) {
+    if (!ser) {
+      Aquila.Logger.error(`BTEntityNode::insertService failed -  ser is null`)
+      return
+    }
+    let serParent = ser.parent()
+    // 如果是同一个父节点，则仅调整索引
+    if (serParent === this) {
+      let oldIndex = this.services.indexOf(ser)
+      let newIndex = this.computeValidIndex(oldIndex, index, this.services.length)
+      if (newIndex >= 0 && oldIndex !== newIndex) {
+        [this.services[oldIndex], this.services[newIndex]] = [this.services[newIndex], this.services[oldIndex]]
+      }
+      this.adjust()
+    } else { // 从原节点删除，移到新节点中
+      serParent.removeService(ser)
+      this.body.add(ser.knode())
+      this.services.splice(index, 0, ser)
+      this.adjust({
+        downward: true,
+        upward: true
+      })
+    }
+  }
 
+  removeService (ser) {
+    if (!ser) {
+      return
+    }
+    let index = this.services.indexOf(ser)
+    this.services.splice(index, 1)
+    ser.knode().remove()
+    this.adjust({
+      downward: true,
+      upward: true
+    })
   }
 
   /**
    * 
    */
   insertChild (child, index) {
-
-  }
-
-  /**
-   * 
-   * @param {*} marker
-   * @param {*} index 
-   */
-  exchangeMarker (host, marker, shadow = true) {
-
-    this.body.add(marker.knode())
-    this.services.splice(index, 0, marker)
-    this.adjust({
-      downward: true
-    })
-    this.refresh()
-  }
-
-  /**
-   * 
-   * @param {*} node 
-   */
-  addChild (child) {
-    if (!child || !this.config.acceptChild) {
+    if (!child) {
+      Aquila.Logger.error(`BTEntityNode::insertChild failed -  child is null`)
       return
     }
-    this.childZone.add(child.knode())
-    this.children.push(child)
+    let childParent = child.parent()
+    // 如果是同一个父节点，则仅调整索引
+    if (childParent === this) {
+      let oldIndex = this.children.indexOf(child)
+      let newIndex = this.computeValidIndex(oldIndex, index, this.children.length)
+      if (newIndex >= 0 && oldIndex !== newIndex) {
+        [this.children[oldIndex], this.children[newIndex]] = [this.children[newIndex], this.children[oldIndex]]
+      }
+      this.adjust()
+    } else { // 从原节点删除，移到新节点中
+      childParent.removeChild(child)
+      this.childZone.add(child.knode())
+      this.children.splice(index, 0, child)
+      this.addChildLink()
+      this.adjust({
+        downward: true,
+        upward: true
+      })
+    }
+  }
 
+  removeChild (child) {
+    if (!child) {
+      return
+    }
+    let index = this.children.indexOf(child)
+    this.children.splice(index, 1)
+    child.knode().remove()
+
+    let link = this.links[index]
+    link.destroy()
+    this.links.splice(index, 1)
+
+    this.adjust({
+      downward: true,
+      upward: true
+    })
+  }
+
+  /**
+   * 
+   */
+  addChildLink () {
     let link = new Konva.Arrow({
       x: 0,
       y: 0,
@@ -440,7 +492,20 @@ class BTEntityNode extends BTNode {
     })
     this.linkZone.add(link)
     this.links.push(link)
+    return link
+  }
 
+  /**
+   * 
+   * @param {*} node 
+   */
+  addChild (child) {
+    if (!child || !this.config.acceptChild) {
+      return
+    }
+    this.childZone.add(child.knode())
+    this.children.push(child)
+    this.addChildLink()
     this.adjust({
       downward: true
     })
@@ -518,15 +583,6 @@ class BTEntityNode extends BTNode {
       return this.children.indexOf(child)
     }
     return -1
-  }
-
-  
-  /**
-   * 
-   * @param {*} child 
-   */
-  removeChild (child) {
-    return null
   }
 
   /**
