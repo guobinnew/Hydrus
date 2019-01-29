@@ -115,8 +115,11 @@ class BTStage {
       this.mousePos = this.stage.getPointerPosition()
       let drag = this.dragMarker.getAttr('@drag')
       if (drag && !this.isDraging) {
-        this.isDraging = true
-        this.dragMarker.startDrag()
+        let dist = Math.sqrt(Math.pow(this.mousePos.x - this.selectPos.x, 2) + Math.pow(this.mousePos.y - this.selectPos.y, 2))
+        if (dist >= Utils.node.dragDistance) {
+          this.isDraging = true
+          this.dragMarker.startDrag()
+        }
       }
     })
 
@@ -439,7 +442,65 @@ class BTStage {
       this.actionIndex = -1
     }
 
+    this.select = null
+    this.isDraging = false
+    this.dragMarker.setAttr('@drag', null)
+    this.dropMarker.setAttr('@drop', null)
+
+    // 删除根节点
+    this.root.selected(false)
+    this.root.clearChildren()
+
     this.refresh()
+  }
+
+  /**
+   * 
+   * @param {*} data 
+   */
+  addEnity (data) {
+    if (!data || !data.type) {
+      return null
+    }
+    let entity = null
+    if (data.type === 'selector') {
+      entity = new BTSelectorNode(data.config)
+    } else if (data.type === 'sequence') {
+      entity = new BTSequenceNode(data.config)
+    } else if (data.type === 'parallel') {
+      entity = new BTParallelNode(data.config)
+    } else if (data.type === 'task') {
+      entity = new BTTaskNode(data.config)
+    }
+    
+    if (!entity) {
+      Aquila.Logger.error(`BTStage::addEnity failed - unknown top node : ${data.type}`)
+      return null
+    }
+
+    // 创建elements
+    if (data.elements) {
+      for (let elem of data.elements) {
+        if (elem.type === 'decorator') {
+          entity.addDecorator(elem.config, -1, false)
+        } else if (elem.type === 'service') {
+          entity.addService(elem.config, -1, false)
+        }
+      }
+    }
+
+    // 创建子节点
+    if (data.children) {
+      for (let child of data.children) {
+        let n = this.addEnity(child)
+        if (!n) {
+          continue
+        }
+        entity.addChild(n, false)
+      }
+    }
+
+    return entity
   }
 
   /**
@@ -455,6 +516,24 @@ class BTStage {
       return
     }
 
+    // 解析读取data
+    // 根节点
+    let top = null
+    if (data.root) {
+      top = this.addEnity(data.root)
+      if (!top) {
+        Aquila.Logger.error('BTStage::loadFromJson failed - data.root is currupted')
+        return
+      }
+      this.root.addChild(top)
+    } else {
+      Aquila.Logger.warn('BTStage::loadFromJson - data is null')
+      return
+    }
+
+    this.root.adjust({
+      downward: true
+    })
     // 如果清除之前缓存，则重新构建新缓存
     if (cache) {
       this.snapshot()

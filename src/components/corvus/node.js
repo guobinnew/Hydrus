@@ -115,7 +115,8 @@ class BTNode {
   /**
    * 删除自己
    */
-  destroy () {
+  destroy (self = true) {
+    this.root.destroy()
   }
 
   /**
@@ -224,7 +225,7 @@ class BTNode {
     let stage = this.stage()
     let zoom = stage ? stage.zoom : 1.0
     let bbox = this.body.getClientRect()
-    needWidth = Math.max(needWidth, bbox.width / zoom)
+    needWidth = Math.max(needWidth, bbox.width / zoom + 2 * Utils.node.margin)
 
     this.resizeWidth(needWidth)
     this.background.height(bbox.height / zoom + 8)
@@ -317,7 +318,7 @@ class BTNode {
   /**
    * 
    */
-  size() {
+  size () {
     return this.background.size()
   }
 

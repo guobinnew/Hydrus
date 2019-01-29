@@ -7,6 +7,9 @@
           <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
           <el-button type="primary" icon="el-icon-edit" @click="zoomOut">Zoom Out</el-button>
           <el-button type="primary" icon="el-icon-edit" @click="reset">Reset</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="undo">Undo</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="redo">Redo</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="clear">Clear</el-button>
         </el-button-group>
       </el-row>
     </div>
@@ -74,7 +77,46 @@
       reset(){
         this.scene.stage.reset()
       },
+      undo(){
+
+      },
+      redo(){
+
+      },
+      clear(){
+
+      },
       test(){
+        // Demo Tree JSON
+        const demo = {
+          root: {
+            type: 'selector',
+            children: [
+              {
+                type: 'sequence',
+                children: [
+                  {
+                    type: 'task',
+                    config: {
+                      label: {
+                        title: '驾驶汽车'
+                      },
+                    },
+                    elements: [
+                      {
+                        type: 'decorator',
+                        config: {
+                          title: '5米距离内有汽车'
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+
         let sel1 = this.scene.stage.addSelectorNode()
 
         let dec = sel1.addDecorator({
@@ -105,6 +147,12 @@
         })
 
         this.scene.stage.addParallelNode()
+        
+        // 从文件加载
+        this.scene.stage.loadFromJson(demo)
+
+
+        this.scene.stage.refresh()
 
       }
     },
@@ -119,7 +167,6 @@
         height: this.size.height
       })
 
-      console.log(this.scene.stage.stage.scale())
       // 测试
       this.test()
 

@@ -14,7 +14,7 @@ class BTEntityNode extends BTNode {
       acceptChild: true,
       fill: '#483D8B',
       stroke: '#191970',
-      title: {},
+      label: {},
       type: 'entity',
       names: { entity: true },
       canMove: true
@@ -122,7 +122,7 @@ class BTEntityNode extends BTNode {
     this.title = new BTLabelNode(Aquila.Utils.lodash.merge({
       canMove: false,
       names: { entitylabel: true }
-    }, this.config.title))
+    }, this.config.label))
     this.body.add(this.title.knode())
 
     if (this.config.acceptService) {
@@ -299,14 +299,16 @@ class BTEntityNode extends BTNode {
    * @param {*} config 
    * @param index number
    */
-  addDecorator (config, index = -1) {
+  addDecorator (config, index = -1, adjust = true) {
     let dec = new BTDecoratorNode(config)
     this.body.add(dec.knode())
     this.decorators.splice(index, 0, dec)
-    this.adjust({
-      downward: true
-    })
-    this.refresh()
+    if (adjust) {
+      this.adjust({
+        downward: true
+      })
+      this.refresh()
+    }
     return dec
   }
 
@@ -315,14 +317,17 @@ class BTEntityNode extends BTNode {
    * @param {*} config 
    * @param index number
    */
-  addService (config, index = -1) {
+  addService (config, index = -1, adjust = true) {
     let ser = new BTServiceNode(config)
     this.body.add(ser.knode())
     this.services.splice(index, 0, ser)
-    this.adjust({
-      downward: true
-    })
-    this.refresh()
+    if (adjust) {
+      this.adjust({
+        downward: true
+      })
+      this.refresh()
+    }
+
     return ser
   }
 
@@ -557,7 +562,7 @@ class BTEntityNode extends BTNode {
    * 
    * @param {*} node 
    */
-  addChild (child) {
+  addChild (child, adjust = true) {
     if (!child || !this.config.acceptChild) {
       return
     }
@@ -565,10 +570,12 @@ class BTEntityNode extends BTNode {
     this.childZone.add(child.knode())
     this.children.push(child)
     this.addChildLink()
-    this.adjust({
-      downward: true
-    })
-    this.refresh()
+    if (adjust) {
+      this.adjust({
+        downward: true
+      })
+      this.refresh()
+    }
   }
 
   /**
@@ -790,6 +797,42 @@ class BTEntityNode extends BTNode {
         p = p.parent()
       }
     }
+  }
+
+  /**
+   * 
+   */
+  destroy (self = true) {
+    // 删除elements
+    this.clearChildren()
+    if (self) {
+      for (let elem of this.elements()) {
+        elem.destroy()
+      }
+      this.root.destroy()
+    }
+  }
+
+  /**
+   * 删除子节点
+   */
+  clearChildren () {
+    // 删除elements
+    if (this.children) {
+      for (let child of this.children) {
+        child.destroy()
+      }
+      this.children = []
+    }
+
+    if (this.links) {
+      for (let link of this.links) {
+        link.destroy()
+      }
+      this.links = []
+    }
+
+    this.adjust()
   }
 }
 

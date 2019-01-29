@@ -5,7 +5,7 @@ class BTSequenceNode extends BTCompositeNode {
   constructor (config) {
     super(Aquila.Utils.lodash.merge({
       type: 'sequence',
-      title: {
+      label: {
         icon: 'sequence',
         title: 'Sequence',
         fill: '#A0522D',

@@ -8,7 +8,7 @@ class BTTaskNode extends BTEntityNode {
     super(Aquila.Utils.lodash.merge({
       acceptChild: false,
       type: 'task',
-      title: {
+      label: {
         icon: 'task',
         title: 'Task',
         fill: '#6A5ACD',

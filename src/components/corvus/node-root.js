@@ -12,7 +12,7 @@ class BTRootNode extends BTEntityNode {
       canMove: false,
       canClose: false,
       type: 'root',
-      title: {
+      label: {
         icon: 'root',
         title: 'Root',
         subtitles: ['root']
@@ -20,7 +20,7 @@ class BTRootNode extends BTEntityNode {
     }, config))
   }
 
-    /**
+  /**
    * 
    * @param {*} child 
    * @param {*} index 
@@ -63,7 +63,6 @@ class BTRootNode extends BTEntityNode {
         downward: true,
         upward: true
       })
-
     }
 
     this.adjust()

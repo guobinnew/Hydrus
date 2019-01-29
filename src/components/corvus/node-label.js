@@ -145,6 +145,21 @@ class BTLabelNode extends BTNode {
       this.dropZone && this.dropZone.width(w)
     }
   }
+
+  /**
+   * 调整布局
+   */
+  adjust (option) {
+    let needWidth = Utils.node.minWidth
+    let stage = this.stage()
+    let zoom = stage ? stage.zoom : 1.0
+    let bbox = this.body.getClientRect()
+    needWidth = Math.max(needWidth, bbox.width / zoom + 24)
+
+    this.resizeWidth(needWidth)
+    this.background.height(bbox.height / zoom + 8)
+  }
+
 }
 
 export default BTLabelNode
