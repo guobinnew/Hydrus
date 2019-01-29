@@ -10,6 +10,15 @@
           <el-button type="primary" icon="el-icon-edit" @click="undo">Undo</el-button>
           <el-button type="primary" icon="el-icon-edit" @click="redo">Redo</el-button>
           <el-button type="primary" icon="el-icon-edit" @click="clear">Clear</el-button>
+
+          <el-dropdown @command="handleAddCommand">
+              <el-button type="danger">
+                Add Node<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item v-for="(val, key) in nodeTypes" :command="key">{{val}}</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
         </el-button-group>
       </el-row>
     </div>
@@ -54,6 +63,14 @@
         scene: {
           stage: null,
           cache: null
+        },
+        nodeTypes: {
+          selector: 'selector',
+          sequence: 'sequence',
+          parallel: 'parallel',
+          task: 'task',
+          decorator: 'decorator',
+          service: 'service'
         }
       }
     },
@@ -67,6 +84,9 @@
         this.size.width = this.$el.clientWidth
         this.size.height = this.$el.clientHeight
         this.scene.stage.resize(this.size.width, this.size.height)
+      },
+      handleAddCommand(command) {
+
       },
       zoomIn(){
         this.scene.stage.zoomIn()
@@ -91,9 +111,19 @@
         const demo = {
           root: {
             type: 'selector',
+            config: {
+              label: {
+                title: '战士AI'
+              }
+            },
             children: [
               {
                 type: 'sequence',
+                config: {
+                  label: {
+                    title: '驾驶'
+                  }
+                },
                 children: [
                   {
                     type: 'task',
@@ -107,6 +137,82 @@
                         type: 'decorator',
                         config: {
                           title: '5米距离内有汽车'
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                type: 'sequence',
+                config: {
+                  label: {
+                    title: '撤退'
+                  }
+                },
+                children: [
+                  {
+                    type: 'selector',
+                    config: {
+                      label: {
+                        title: '或'
+                      }
+                    },
+                    elements: [
+                      {
+                        type: 'decorator',
+                        config: {
+                          title: '我方人数小于3'
+                        }
+                      },
+                      {
+                        type: 'decorator',
+                        config: {
+                          title: '敌方人数倍数大于5'
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    type: 'task',
+                    config: {
+                      label: {
+                        title: '撤退'
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                type: 'selector',
+                config: {
+                  label: {
+                    title: '自卫'
+                  }
+                },
+                children: [
+                  {
+                    type: 'sequence',
+                    config: {
+                      label: {
+                        title: '使用手雷'
+                      }
+                    },
+                    elements: [
+                      {
+                        type: 'decorator',
+                        config: {
+                          title: '前方15米内敌方人数小于4'
+                        }
+                      }
+                    ],
+                    children: [
+                      {
+                        type: 'task',
+                        config: {
+                          label: {
+                            title: '扔手雷'
+                          }
                         }
                       }
                     ]

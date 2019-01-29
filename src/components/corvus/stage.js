@@ -474,7 +474,7 @@ class BTStage {
     }
     
     if (!entity) {
-      Aquila.Logger.error(`BTStage::addEnity failed - unknown top node : ${data.type}`)
+      Aquila.Logger.error(`BTStage::addEnity failed - unknown node : ${data.type}`)
       return null
     }
 
