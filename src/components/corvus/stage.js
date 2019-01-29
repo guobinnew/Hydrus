@@ -21,6 +21,7 @@ class BTStage {
     Aquila.Utils.lodash.merge(this.options, options)
     this.stage = new Konva.Stage(this.options)
     this.stage.setAttr('@stage', this)
+    this.root = null
 
     this.layers = {}
     // 创建图层
@@ -101,14 +102,10 @@ class BTStage {
         this.isDraging = false
       }
 
-      console.log('mousedown', this.isDraging)
-
       this.refresh()
     })
 
     this.stage.on('mouseup', (evt) => {
-      let shape = evt.target
-      console.log('mouseup', this.isDraging)
       if (!this.isDraging) {
         this.isDraging = false
         this.dragMarker.setAttr('@drag', null)
@@ -117,22 +114,17 @@ class BTStage {
 
     this.stage.on('mousemove', (evt) => {
       this.mousePos = this.stage.getPointerPosition()
-      console.log('mousemove')
       let drag = this.dragMarker.getAttr('@drag')
       if (drag && !this.isDraging) {
-        console.log('mousemove---startdrag', drag)
         this.isDraging = true
         this.dragMarker.startDrag()
       }
     })
 
     this.stage.on('dragstart', (evt) => {
-      let shape = evt.target
-
     })
 
     this.stage.on('dragmove', (evt) => {
-      console.log('dragmove', evt)
       if (evt.target instanceof Konva.Stage) {
         return
       }
@@ -151,7 +143,6 @@ class BTStage {
       let drop = {}
       if (node === drag) {} else {
         if (shape) {
-          console.log('xxxxxxx', shape, node)
           if (shape.hasName('dropzone') && shape.canDrop(dragtype)) { // 节点内部投放区域
             drop.type = 'dropzone'
             drop.zone = shape
@@ -162,17 +153,27 @@ class BTStage {
             drop.zone = node
           }
         } else if (drag.isType('entity')) { // 处理实体节点
-          
           // 遍历实体
           let nodes = this.layers.model.find('.entity')
           for (let n of nodes) {
             let entity = n.getAttr('@node')
-            let offset = this.stage.getAbsolutePosition()
-            let canvasPos = {
-              x: (this.mousePos.x - offset.x) / this.zoom,
-              y: (this.mousePos.y - offset.y) / this.zoom
+            // 检查实体是否有效
+            if (!entity.canAcceptChild()) {
+              console.log('1111111111')
+              continue
             }
-            console.log('drop-entity', this.mousePos, canvasPos)
+            // 不能将父节点拖到自身后代节点上
+            if (entity === drag || entity.hasParent(drag)) {
+              console.log('2222222222')
+              continue
+            }
+
+            // 如果是Root节点，只能接受composite
+            if (entity === this.root && !drag.isType('composite')) {
+              console.log('3333333333333')
+              continue
+            }
+
             let index = entity.intersection(this.mousePos)
             if (index >= 0) {
               drop.type = 'child'
@@ -212,8 +213,6 @@ class BTStage {
     })
 
     this.stage.on('dragend', (evt) => {
-      let target = evt.target
-      console.log('dragend', this.isDraging)
       if (this.isDraging) {
         this.dragMarker.stopDrag()
         // 执行拖放处理
@@ -233,13 +232,12 @@ class BTStage {
                 index = parent.service.indexOf(drop.zone)
               }
             }
-
             parent.insertElement(drag, index)
           } else if (drop.index >= 0) {
             drop.node.setChildDropping(-1)
             drop.node.insertChild(drag, drop.index)
           }
-          drop.node.refresh()
+          drop.node && drop.node.refresh()
         }
         this.dragMarker.setAttr('@drag', null)
         this.isDraging = false

@@ -95,6 +95,18 @@ class BTNode {
   }
 
   /**
+   * 
+   * @param {*} parent
+   */
+  hasParent (parent) {
+    let p = this.parent()
+    while (p && p !== parent) {
+      p = p.parent()
+    }
+    return p === parent
+  }
+
+  /**
    * 从父节点删除
    */
   remove () {
@@ -255,6 +267,9 @@ class BTNode {
     return this.config.canMove
   }
 
+  canAcceptChild () {
+    return this.config.acceptChild
+  }
   /**
    * knova节点
    */
