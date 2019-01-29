@@ -284,6 +284,14 @@ class BTNode {
   canAcceptChild () {
     return this.config.acceptChild
   }
+
+  /**
+   * 
+   */
+  isVisible () {
+    return this.root.visible()
+  }
+
   /**
    * knova节点
    */

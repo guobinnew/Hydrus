@@ -484,6 +484,7 @@ class BTEntityNode extends BTNode {
       this.adjust()
     } else { // 从原节点删除，移到新节点中
       childParent.removeChild(child)
+      this.expandChildren(true)
       this.childZone.add(child.knode())
       this.children.splice(index, 0, child)
       this.addChildLink()
@@ -544,7 +545,8 @@ class BTEntityNode extends BTNode {
       fill: '#1c1c1c',
       stroke: '#1c1c1c',
       strokeWidth: 4,
-      tension: 0.5
+      tension: 0.5,
+      visible: this.isExpanding
     })
     this.linkZone.add(link)
     this.links.push(link)
@@ -559,6 +561,7 @@ class BTEntityNode extends BTNode {
     if (!child || !this.config.acceptChild) {
       return
     }
+    child.visible(this.isExpanding)
     this.childZone.add(child.knode())
     this.children.push(child)
     this.addChildLink()
@@ -688,6 +691,7 @@ class BTEntityNode extends BTNode {
    * @param {*} flag boolean
    */
   expandChildren (flag = true) {
+    this.isExpanding = flag
     this.expand.setExpand(flag)
 
     for (let child of this.children) {

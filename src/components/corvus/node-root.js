@@ -29,7 +29,7 @@ class BTRootNode extends BTEntityNode {
     if (!child) {
       return
     }
-    
+
     let parent = child.parent()
     parent.removeChild(child)
 
@@ -57,10 +57,13 @@ class BTRootNode extends BTEntityNode {
         child.children.push(c)
         child.addChildLink()
       }
+      // 自动展开
+      child.expandChildren(true)
       child.adjust({
         downward: true,
         upward: true
       })
+
     }
 
     this.adjust()

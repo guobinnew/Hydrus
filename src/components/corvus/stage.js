@@ -156,8 +156,8 @@ class BTStage {
           let nodes = this.layers.model.find('.entity')
           for (let n of nodes) {
             let entity = n.getAttr('@node')
-            // 检查实体是否有效
-            if (!entity.canAcceptChild()) {
+            // 检查实体是否有效或可见
+            if (!entity.canAcceptChild() || !entity.isVisible()) {
               continue
             }
             // 不能将父节点拖到自身后代节点上
