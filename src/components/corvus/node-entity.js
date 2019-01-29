@@ -81,6 +81,20 @@ class BTEntityNode extends BTNode {
       })
       this.root.add(this.linkZone)
 
+      this.childZoneLink = new Konva.Arrow({
+        x: 0,
+        y: 0,
+        points: [0, 0, 25, 0, Utils.node.space.horizonal, 0],
+        pointerLength: 8,
+        pointerWidth: 8,
+        fill: Utils.zone.highlight,
+        stroke: Utils.zone.highlight,
+        strokeWidth: 4,
+        tension: 0.5,
+        visible: false
+      })
+      this.linkZone.add(this.childZoneLink)
+
       this.isExpanding = true
       this.expand = this.createExpandButton({
         size: 12,
@@ -145,16 +159,6 @@ class BTEntityNode extends BTNode {
     // 接受的drop类型
     zone.setAttr('@types', config.acceptTypes)
 
-    // zone.on('mouseout', function () {
-    //   this.setAttr('fill', Utils.zone.fill)
-    //   this.getLayer().draw()
-    // })
-
-    // zone.on('mouseover', function () {
-    //   this.setAttr('fill', Utils.zone.highlight)
-    //   this.getLayer().draw()
-    // })
-
     zone.canDrop = function (type) {
       let arr = zone.getAttr('@types')
       return arr.indexOf(type) >= 0
@@ -179,20 +183,29 @@ class BTEntityNode extends BTNode {
 
     if (index < 0) {
       this.childZoneMarker.hide()
+      this.childZoneLink.hide()
     } else {
-      let i = (index >= this.children.length) ? this.children.length - 1 : index
+      console.log('setChildDropping', index)
 
-      console.log('setChildDropping', index, i)
-      // 计算位置和宽度
-      let child = this.children[i]
-      if (index >= this.children.length) {
-        this.childZoneMarker.y(child.position().y + child.size().height + (Utils.node.childSpace.vertical - 8) / 2)
+      if (this.children.length > 0) {
+        let i = (index >= this.children.length) ? this.children.length - 1 : index
+        // 计算位置和宽度
+        let child = this.children[i]
+        if (index >= this.children.length) {
+          this.childZoneMarker.y(child.position().y + child.size().height + (Utils.node.childSpace.vertical - 8) / 2)
+        } else {
+          this.childZoneMarker.y(child.position().y - (Utils.node.childSpace.vertical + 8) / 2)
+        }
+        this.childZoneMarker.width(child.size().width)
       } else {
-        this.childZoneMarker.y(child.position().y - (Utils.node.childSpace.vertical + 8) / 2)
+        this.childZoneMarker.y(-this.childZoneMarker.height() / 2)
+        this.childZoneMarker.width(Utils.node.minWidth)
       }
-
-      this.childZoneMarker.width(child.size().width)
+  
       this.childZoneMarker.show()
+      let anchorY = this.childZoneMarker.y() + this.childZoneMarker.height() / 2
+      this.childZoneLink.points([0, 0, 25, anchorY * 3 / 4, Utils.node.childSpace.horizonal, anchorY])
+      this.childZoneLink.show()
     }
 
     this.refresh()
@@ -563,37 +576,41 @@ class BTEntityNode extends BTNode {
       right: pos.x + (width + Utils.node.childSpace.horizonal) * zoom
     }
 
-    console.log(point, pos, zone)
-
     if (point.x < zone.left || point.x > zone.right) {
       return -1
     }
 
-    let zoneHeight = 0
-    let childHeights = []
-    let allowance = 0
-    for (let child of this.children) {
-      let h = child.clientHeight()
-      childHeights.push(h / 2 + allowance)
-      allowance = h / 2 + Utils.node.childSpace.vertical
-      zoneHeight += (h + Utils.node.childSpace.vertical)
-    }
-    childHeights.push(allowance)
-    zoneHeight -= Utils.node.childSpace.vertical
-
-    let height = this.background.height()
-    zoneHeight = Math.max(height, zoneHeight)
-    
     let index = -1
-    let offsetY = pos.y + (height - zoneHeight) / 2 * zoom
-    for (let i = 0; i < childHeights.length; i++) {
-      if ((i === 0) && point.y < offsetY) {
-        break
+    let height = this.size().height
+    // 如果没有子节点
+    if (this.children.length === 0) {
+      if (point.y > pos.y && point.y < (pos.y + height * zoom)) {
+        index = 0
       }
-      offsetY += (childHeights[i] * zoom)
-      if (point.y < offsetY) {
-        index = i
-        break
+    } else {
+      let childHeights = []
+      let allowance = 0
+      let zoneHeight = 0
+      for (let child of this.children) {
+        let h = child.clientHeight()
+        childHeights.push(h / 2 + allowance)
+        allowance = h / 2 + Utils.node.childSpace.vertical
+        zoneHeight += (h + Utils.node.childSpace.vertical)
+      }
+      childHeights.push(allowance)
+      zoneHeight -= Utils.node.childSpace.vertical
+      zoneHeight = Math.max(height, zoneHeight)
+      
+      let offsetY = pos.y + (height - zoneHeight) / 2 * zoom
+      for (let i = 0; i < childHeights.length; i++) {
+        if ((i === 0) && point.y < offsetY) {
+          break
+        }
+        offsetY += (childHeights[i] * zoom)
+        if (point.y < offsetY) {
+          index = i
+          break
+        }
       }
     }
 

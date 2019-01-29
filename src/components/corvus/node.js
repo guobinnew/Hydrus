@@ -259,6 +259,18 @@ class BTNode {
     return this.root.hasName(type)
   }
 
+  /**
+   * 层级 root = 0
+   */
+  level () {
+    let l = 0
+    let p = this.parent()
+    while (p) {
+      l++
+      p = p.parent()
+    }
+    return l
+  }
 
   /**
    * 

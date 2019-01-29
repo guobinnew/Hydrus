@@ -185,7 +185,7 @@ class BTStage {
         }
 
         let oldDrop = this.dropMarker.getAttr('@drop')
-        console.log(oldDrop, drop)
+        console.log('dragmove------', oldDrop, drop)
 
         if (oldDrop &&
           oldDrop.type === drop.type &&

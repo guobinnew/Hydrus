@@ -10,6 +10,7 @@ class BTRootNode extends BTEntityNode {
     super(Aquila.Utils.lodash.merge({
       acceptDecorator: false,
       canMove: false,
+      canClose: false,
       type: 'root',
       title: {
         icon: 'root',
