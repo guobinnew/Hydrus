@@ -84,7 +84,7 @@ class BTEntityNode extends BTNode {
       this.childZoneLink = new Konva.Arrow({
         x: 0,
         y: 0,
-        points: [0, 0, 25, 0, Utils.node.space.horizonal, 0],
+        points: [0, 0, 25, 0, Utils.node.childSpace.horizonal, 0],
         pointerLength: 8,
         pointerWidth: 8,
         fill: Utils.zone.highlight,
@@ -185,8 +185,6 @@ class BTEntityNode extends BTNode {
       this.childZoneMarker.hide()
       this.childZoneLink.hide()
     } else {
-      console.log('setChildDropping', index)
-
       if (this.children.length > 0) {
         let i = (index >= this.children.length) ? this.children.length - 1 : index
         // 计算位置和宽度
@@ -233,7 +231,8 @@ class BTEntityNode extends BTNode {
       stroke: '#333',
       strokeWidth: 2,
       lineCap: 'round',
-      lineJoin: 'round'
+      lineJoin: 'round',
+      isExpanding: true
     }, option)
 
     // expand按钮
@@ -268,7 +267,8 @@ class BTEntityNode extends BTNode {
       stroke: opt.stroke,
       strokeWidth: opt.strokeWidth,
       lineCap: 'round',
-      lineJoin: 'round'
+      lineJoin: 'round',
+      visible: !opt.isExpanding
     })
     expand.add(vline)
     expand.setAttr('@pid', opt.uid)
@@ -285,6 +285,12 @@ class BTEntityNode extends BTNode {
       hline.setAttr('stroke', '#FF3030')
       this.getLayer().draw()
     })
+
+    expand.setExpand = function (flag) {
+      vline.visible(!flag)
+      this.getLayer().draw()
+    }
+
     return expand
   }
 
@@ -532,7 +538,7 @@ class BTEntityNode extends BTNode {
     let link = new Konva.Arrow({
       x: 0,
       y: 0,
-      points: [0, 0, 25, 0, Utils.node.space.horizonal, 0],
+      points: [0, 0, 25, 0, Utils.node.childSpace.horizonal, 0],
       pointerLength: 8,
       pointerWidth: 8,
       fill: '#1c1c1c',
@@ -682,6 +688,8 @@ class BTEntityNode extends BTNode {
    * @param {*} flag boolean
    */
   expandChildren (flag = true) {
+    this.expand.setExpand(flag)
+
     for (let child of this.children) {
       child.visible(flag)
     }

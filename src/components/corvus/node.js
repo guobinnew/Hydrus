@@ -266,7 +266,7 @@ class BTNode {
     let l = 0
     let p = this.parent()
     while (p) {
-      l++
+      l += 1
       p = p.parent()
     }
     return l

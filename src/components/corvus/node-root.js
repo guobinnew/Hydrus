@@ -26,7 +26,14 @@ class BTRootNode extends BTEntityNode {
    * @param {*} index 
    */
   insertChild (child, index) {
+    if (!child) {
+      return
+    }
+    
+    let parent = child.parent()
+    parent.removeChild(child)
 
+    this.addChild(child)
   }
 
   /**

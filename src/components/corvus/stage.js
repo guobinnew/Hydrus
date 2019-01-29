@@ -7,7 +7,6 @@ import BTSelectorNode from './node-composite-selector'
 import BTSequenceNode from './node-composite-sequence'
 import BTParallelNode from './node-composite-parallel'
 import BTTaskNode from './node-task'
-import BTLabelNode from './node-label'
 
 /**
  * 编辑面板
@@ -159,18 +158,16 @@ class BTStage {
             let entity = n.getAttr('@node')
             // 检查实体是否有效
             if (!entity.canAcceptChild()) {
-              console.log('1111111111')
               continue
             }
             // 不能将父节点拖到自身后代节点上
             if (entity === drag || entity.hasParent(drag)) {
-              console.log('2222222222')
               continue
             }
 
-            // 如果是Root节点，只能接受composite
-            if (entity === this.root && !drag.isType('composite')) {
-              console.log('3333333333333')
+            // 如果是Root节点，只能接受composite, 节点Level>1
+            console.log('drag-----', drag, drag.level())
+            if (entity === this.root && (!drag.isType('composite') || drag.level() <= 1)) {
               continue
             }
 
