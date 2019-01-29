@@ -221,11 +221,13 @@ class BTNode {
    */
   adjust (option) {
     let needWidth = Utils.node.minWidth
+    let stage = this.stage()
+    let zoom = stage ? stage.zoom : 1.0
     let bbox = this.body.getClientRect()
-    needWidth = Math.max(needWidth, bbox.width)
+    needWidth = Math.max(needWidth, bbox.width / zoom)
 
     this.resizeWidth(needWidth)
-    this.background.height(bbox.height + 8)
+    this.background.height(bbox.height / zoom + 8)
   }
 
   /**
@@ -293,7 +295,8 @@ class BTNode {
    * 获取BTStage对象
    */
   stage () {
-    return this.root.getStage().getAttr('@stage')
+    let st = this.root.getStage()
+    return st ? st.getAttr('@stage') : null
   }
 
   /**

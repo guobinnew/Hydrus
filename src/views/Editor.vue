@@ -6,6 +6,7 @@
         <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="zoomIn">Zoom In</el-button>
           <el-button type="primary" icon="el-icon-edit" @click="zoomOut">Zoom Out</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="reset">Reset</el-button>
         </el-button-group>
       </el-row>
     </div>
@@ -70,6 +71,9 @@
       zoomOut(){
         this.scene.stage.zoomOut()
       },
+      reset(){
+        this.scene.stage.reset()
+      },
       test(){
         let sel1 = this.scene.stage.addSelectorNode()
 
@@ -115,6 +119,7 @@
         height: this.size.height
       })
 
+      console.log(this.scene.stage.stage.scale())
       // 测试
       this.test()
 

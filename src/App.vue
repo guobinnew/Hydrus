@@ -136,7 +136,6 @@
     },
     methods: {
       handleSelect (key, keyPath) {
-        console.log(key, keyPath)
         this.activeIndex = key
         const page = {
            name: key

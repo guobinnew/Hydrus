@@ -166,7 +166,6 @@ class BTStage {
             }
 
             // 如果是Root节点，只能接受composite, 节点Level>1
-            console.log('drag-----', drag, drag.level())
             if (entity === this.root && (!drag.isType('composite') || drag.level() <= 1)) {
               continue
             }
@@ -182,7 +181,6 @@ class BTStage {
         }
 
         let oldDrop = this.dropMarker.getAttr('@drop')
-        console.log('dragmove------', oldDrop, drop)
 
         if (oldDrop &&
           oldDrop.type === drop.type &&
@@ -279,7 +277,6 @@ class BTStage {
     // 如果自己满足条件，返回自己
     let p = shape
     while (p) {
-      console.log('findNodeParent', p)
       if (p instanceof Konva.Group && p.hasName('node')) {
         break
       }
@@ -293,7 +290,7 @@ class BTStage {
    */
   addRootNode () {
     this.root = new BTRootNode({
-      x: this.stage.width() / 2,
+      x: 20,
       y: this.stage.height() / 2
     })
     this.layers.model.add(this.root.knode())
