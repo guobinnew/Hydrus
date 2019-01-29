@@ -217,14 +217,29 @@ class BTStage {
       if (this.isDraging) {
         this.dragMarker.stopDrag()
         // 执行拖放处理
+        let drag = this.dragMarker.getAttr('@drag')
+        let dragtype = drag.nodeType()
         let drop = this.dropMarker.getAttr('@drop')
-        console.log('drop---', drop)
         if (drop) {
           if (drop.zone) {
             drop.zone.setDropping(false)
+            let parent = drop.node
+            let index = -1
+            if (drop.type === 'accessory') {
+              parent = drop.node.parent()
+              if (dragtype === 'decorator') {
+                index = parent.decorators.indexOf(drop.zone)
+              } else if (dragtype === 'service') {
+                index = parent.service.indexOf(drop.zone)
+              }
+            }
+
+            parent.insertElement(drag, index)
           } else if (drop.index >= 0) {
             drop.node.setChildDropping(-1)
+            drop.node.insertChild(drag, drop.index)
           }
+          drop.node.refresh()
         }
         this.dragMarker.setAttr('@drag', null)
         this.isDraging = false

@@ -308,24 +308,96 @@ class BTEntityNode extends BTNode {
   }
 
   /**
-   * 
+   * 计算索引
+   * @param {*} oldIndex 
+   * @param {*} newIndex 
+   * @param length
    */
-  replaceDecorator (dec, replacer) {
-    //if ()
-    //int index = this.decorators.indexOf(dec)
+  computeValidIndex (oldIndex, newIndex, length) {
+    if (length === 0) {
+      return -1
+    }
+
+    if (length === 1) {
+      return 0
+    }
+
+    if (newIndex < 0 || newIndex >= length) {
+      return length - 1
+    }
+
+    if (newIndex === (oldIndex + 1)) {
+      newIndex--
+    }
+    return newIndex
   }
 
   /**
    * 
    */
-  replaceService (ser, replacer) {
+  insertElement (elem, index) {
+    let type = elem.nodeType()
+    if (type === 'decorator') {
+      this.insertDecorator(elem, index)
+    } else if (type === 'service') {
+      this.insertService(elem, index)
+    } else {
+      Aquila.Logger.error(`BTEntityNode::insertElement failed - unknown element type: ${type}`)
+    }
+  }
+
+  /**
+   * 
+   */
+  insertDecorator (dec, index) {
+    if (!dec) {
+      Aquila.Logger.error(`BTEntityNode::insertDecorator failed -  dec is null`)
+      return
+    }
+    let decParent = dec.parent()
+    // 如果是同一个父节点，则仅调整索引
+    if (decParent === this) {
+      let oldIndex = this.decorators.indexOf(dec)
+      let newIndex = this.computeValidIndex(oldIndex, index, this.decorators.length)
+      if (newIndex >= 0 && oldIndex !== newIndex) {
+        [this.decorators[oldIndex], this.decorators[newIndex]] = [this.decorators[newIndex], this.decorators[oldIndex]]
+      }
+      this.adjust()
+    } else { // 从原节点删除，移到新节点中
+      decParent.removeDecorator(dec)
+      this.body.add(dec.knode())
+      this.decorators.splice(index, 0, dec)
+      this.adjust({
+        downward: true,
+        upward: true
+      })
+    }
+  }
+
+  removeDecorator (dec) {
+    if (!dec) {
+      return
+    }
+    let index = this.decorators.indexOf(dec)
+    this.decorators.splice(index, 1)
+    dec.knode().remove()
+    this.adjust({
+      downward: true,
+      upward: true
+    })
+  }
+
+  /**
+   * 
+   */
+  insertService (ser, index) {
 
   }
 
   /**
    * 
    */
-  replaceChild (child, replacer) {
+  insertChild (child, index) {
 
   }
 
@@ -373,15 +445,6 @@ class BTEntityNode extends BTNode {
       downward: true
     })
     this.refresh()
-  }
-
-  /**
-   * 
-   * @param {*} elem 
-   * @param {*} index 
-   */
-  addElement(elem, index = -1) {
-
   }
 
   /**
@@ -532,17 +595,24 @@ class BTEntityNode extends BTNode {
     return [].concat(this.decorators, this.title, this.services)
   }
 
-  /**
+    /**
    * 获取包含子节点的高度
    */
-  clientHeight () {
+  childHeight () {
     let childHeight = 0
     for (let child of this.children) {
       childHeight += child.clientHeight()
       childHeight += Utils.node.childSpace.vertical
     }
     childHeight -= Utils.node.childSpace.vertical
-    return Math.max(childHeight, this.background.height())
+    return childHeight
+  }
+
+  /**
+   * 获取包含子节点的高度
+   */
+  clientHeight () {
+    return Math.max(this.childHeight(), this.background.height())
   }
   /**
    * 调整布局
@@ -583,17 +653,26 @@ class BTEntityNode extends BTNode {
     this.linkZone && this.linkZone.y(needHeight / 2)
 
     // 调整子节点位置
-    if (opt.downward) {
-      let offsetY = -this.clientHeight() / 2
-      for (let i = 0; i < this.children.length; i++) {
-        let child = this.children[i]
-        let childHeight = child.clientHeight()
-        let link = this.links[i]
-        child.knode().y(offsetY)
-        // 调整连线
-        let anchorY = offsetY + childHeight / 2
-        link.points([0, 0, 25, anchorY * 3 / 4, Utils.node.childSpace.horizonal, anchorY])
-        offsetY += (childHeight + Utils.node.childSpace.vertical)
+    offsetY = -this.childHeight() / 2
+    for (let i = 0; i < this.children.length; i++) {
+      let child = this.children[i]
+      let childHeight = child.clientHeight()
+      let height = child.size().height
+      let link = this.links[i]
+      let y = offsetY + (childHeight - height) / 2
+      child.knode().y(y)
+      // 调整连线
+      let anchorY = y + childHeight / 2
+      link.points([0, 0, 25, anchorY * 3 / 4, Utils.node.childSpace.horizonal, anchorY])
+      offsetY += (childHeight + Utils.node.childSpace.vertical)
+    }
+
+    if (opt.upward) {
+      let p = this.parent()
+      while (p) {
+        console.log('adjust upword', p)
+        p.adjust()
+        p = p.parent()
       }
     }
   }

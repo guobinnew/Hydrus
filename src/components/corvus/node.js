@@ -98,7 +98,6 @@ class BTNode {
    * 从父节点删除
    */
   remove () {
-
   }
 
   /**
