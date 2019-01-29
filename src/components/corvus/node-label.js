@@ -145,14 +145,6 @@ class BTLabelNode extends BTNode {
       this.dropZone && this.dropZone.width(w)
     }
   }
-
-  /**
-   * 
-   */
-  remove() {
-    
-
-  }
 }
 
 export default BTLabelNode

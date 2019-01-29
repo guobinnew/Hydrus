@@ -333,7 +333,9 @@ class BTEntityNode extends BTNode {
   }
 
   /**
-   * 
+   * 插入元素（Decorator或Service）
+   * @param {*} elem 
+   * @param {*} index 
    */
   insertElement (elem, index) {
     let type = elem.nodeType()
@@ -346,8 +348,11 @@ class BTEntityNode extends BTNode {
     }
   }
 
+ 
   /**
-   * 
+   * 插入条件
+   * @param {*} dec 
+   * @param {*} index 
    */
   insertDecorator (dec, index) {
     if (!dec) {
@@ -374,6 +379,10 @@ class BTEntityNode extends BTNode {
     }
   }
 
+  /**
+   * 
+   * @param {*} dec 
+   */
   removeDecorator (dec) {
     if (!dec) {
       return
@@ -388,7 +397,9 @@ class BTEntityNode extends BTNode {
   }
 
   /**
-   * 
+   * 插入服务
+   * @param {*} ser BTServiceNode
+   * @param {*} index int 索引位置
    */
   insertService (ser, index) {
     if (!ser) {
@@ -415,6 +426,10 @@ class BTEntityNode extends BTNode {
     }
   }
 
+  /**
+   * 删除服务
+   * @param {*} ser BTServiceNode
+   */
   removeService (ser) {
     if (!ser) {
       return
@@ -428,8 +443,11 @@ class BTEntityNode extends BTNode {
     })
   }
 
+
   /**
    * 
+   * @param {*} child 
+   * @param {*} index 
    */
   insertChild (child, index) {
     if (!child) {
@@ -457,6 +475,10 @@ class BTEntityNode extends BTNode {
     }
   }
 
+  /**
+   * 
+   * @param {*} child 
+   */
   removeChild (child) {
     if (!child) {
       return
@@ -473,6 +495,21 @@ class BTEntityNode extends BTNode {
       downward: true,
       upward: true
     })
+  }
+
+  /**
+   * 
+   */
+  removeChildren () {
+    for (let i = 0; i < this.children.length; i++) {
+      let child = this.children[i]
+      child.knode().remove()
+      this.links[i].destroy()
+    }
+    this.links = []
+    let list = [].concat(this.children)
+    this.children = []
+    return list
   }
 
   /**
@@ -585,13 +622,6 @@ class BTEntityNode extends BTNode {
     return -1
   }
 
-  /**
-   * 
-   */
-  removeChildren () {
-    return []
-  }
- 
   /**
    * 调整宽
    * @param {*} w 
@@ -718,7 +748,7 @@ class BTEntityNode extends BTNode {
       let y = offsetY + (childHeight - height) / 2
       child.knode().y(y)
       // 调整连线
-      let anchorY = y + childHeight / 2
+      let anchorY = y + height / 2
       link.points([0, 0, 25, anchorY * 3 / 4, Utils.node.childSpace.horizonal, anchorY])
       offsetY += (childHeight + Utils.node.childSpace.vertical)
     }

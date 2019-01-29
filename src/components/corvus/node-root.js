@@ -19,24 +19,44 @@ class BTRootNode extends BTEntityNode {
     }, config))
   }
 
+    /**
+   * 
+   * @param {*} child 
+   * @param {*} index 
+   */
+  insertChild (child, index) {
+
+  }
+
   /**
    * 
-   * @param {*} node 
+   * @param {*} child 
    */
-  addChild (node) {
-    if (!node) {
+  addChild (child) {
+    if (!child || !this.config.acceptChild) {
       return
     }
+
     // 将原节点变为子节点
-    if (this.children.length > 0) {
-      let children = this.removeChildren()
-      for (let child of children) {
-        node.addChild(child)
+    let children = this.removeChildren()
+    this.childZone.add(child.knode())
+    this.children.push(child)
+    this.addChildLink()
+
+    if (children.length > 0) {
+      for (let c of children) {
+        child.childZone.add(c.knode())
+        child.children.push(c)
+        child.addChildLink()
       }
-    } 
-    super.addChild(node)
+      child.adjust({
+        downward: true,
+        upward: true
+      })
+    }
+
+    this.adjust()
   }
- 
 }
 
 export default BTRootNode

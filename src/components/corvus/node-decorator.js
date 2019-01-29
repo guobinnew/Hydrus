@@ -19,15 +19,6 @@ class BTDecoratorNode extends BTLabelNode {
       acceptTypes: ['decorator']
     }, config))
   }
-
-  /**
-   * 
-   */
-  remove () {
-    let parent = this.parent()
-    parent.removeDecorator(this)
-    parent.adjust()
-  }
 }
 
 export default BTDecoratorNode
