@@ -154,6 +154,28 @@ const utils = {
      */
     clone (obj) {
       return _.cloneDeep(obj)
+    },
+
+    /**
+     * 时间戳
+     */
+    currentDateString (time = false) {
+      let date = new Date()
+      let t = [
+        date.getFullYear(),
+        date.getMonth() + 1,
+        date.getDate()
+      ]
+
+      if (time) {
+        t = t.concat([
+          date.getHours(),
+          date.getMinutes(),
+          date.getSeconds(),
+          date.getMilliseconds()
+        ])
+      }
+      return t.join('-')
     }
 
   },

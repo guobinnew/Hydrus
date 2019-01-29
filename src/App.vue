@@ -11,7 +11,7 @@
                         <i class="el-icon-location"></i>
                         <span slot="title">行为树编辑台</span>
                     </el-menu-item>
-                    <el-menu-item index="test">
+                    <el-menu-item index="debug">
                         <i class="el-icon-setting"></i>
                         <span slot="title">行为树调试台</span>
                     </el-menu-item>

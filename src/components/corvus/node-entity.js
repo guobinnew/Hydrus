@@ -305,7 +305,8 @@ class BTEntityNode extends BTNode {
     this.decorators.splice(index, 0, dec)
     if (adjust) {
       this.adjust({
-        downward: true
+        downward: true,
+        upward: true
       })
       this.refresh()
     }
@@ -323,7 +324,8 @@ class BTEntityNode extends BTNode {
     this.services.splice(index, 0, ser)
     if (adjust) {
       this.adjust({
-        downward: true
+        downward: true,
+        upward: true
       })
       this.refresh()
     }
@@ -466,7 +468,6 @@ class BTEntityNode extends BTNode {
       upward: true
     })
   }
-
 
   /**
    * 

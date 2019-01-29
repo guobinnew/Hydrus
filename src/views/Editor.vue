@@ -76,6 +76,7 @@
   import Corvus from '../components/corvus/index'
   import EditElement from '../components/EditElement.vue'
   import EditEntity from '../components/EditEntity.vue'
+import Aquila from '../components/aquila';
 
   export default {
     components: { EditElement, EditEntity },
@@ -317,7 +318,7 @@
         // 保存到本地文件
         let filename = this.scene.cache.root.config.label.title
         let blob = new Blob([JSON.stringify(this.scene.cache)], {type: "text/plain;charset=utf-8"})
-        FileSaver.saveAs(blob, filename + ".json")
+        FileSaver.saveAs(blob, filename + '-' + Aquila.Utils.common.currentDateString(true) + ".json")
       },
       loadCache(){
         LocalForage.getItem(this.scene.cachekey, (err, value) => {
