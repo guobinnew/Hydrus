@@ -69,7 +69,7 @@ class BTLabelNode extends BTNode {
     logo.scaleY(Utils.label.iconSize * 1.0 / Utils.svg.baseSize)
     this.body.add(logo)
   
-    let title = new Konva.Text({
+    this.title = new Konva.Text({
       x: 32,
       y: 8,
       text: this.config.title,
@@ -77,25 +77,93 @@ class BTLabelNode extends BTNode {
       fill: '#fff',
       draggable: false
     })
-    this.body.add(title)
+    this.body.add(this.title)
 
     let offsetY = Utils.label.space + Utils.label.iconSize
     if (this.config.subtitles.length === 0) {
       this.config.subtitles.push(this.config.type)
     }
+
+    this.subtitles = []
     for (let sub of this.config.subtitles) {
-      let subtitle = new Konva.Text({
+      let subtitle = this.createSubtitle({
         x: 6,
         y: offsetY,
-        text: sub,
-        fontSize: Utils.label.subFontSize,
-        fill: '#fff',
-        draggable: false
+        text: sub
       })
+      this.subtitles.push(subtitle)
       this.body.add(subtitle)
       offsetY += 12 + Utils.label.space
     }
     this.root.add(this.body)
+  }
+
+  /**
+   * 
+   * @param {*} text 
+   */
+  createSubtitle (option) {
+    return new Konva.Text({
+      x: option.x,
+      y: option.y,
+      text: option.text,
+      fontSize: Utils.label.subFontSize,
+      fill: '#fff',
+      draggable: false
+    })
+  }
+  /**
+   * 
+   */
+  getTitle () {
+    return this.config.title
+  }
+
+  /**
+   * 
+   */
+  setTitle (title) {
+    if (!title) {
+      title = ''
+    }
+    this.config.title = title
+    this.title.text(title)
+    this.adjust()
+  }
+
+  getSubtitles () {
+    return this.config.subtitles
+  }
+
+  setSubtitles (subtitles) {
+    this.config.subtitles = [].concat(subtitles)
+    // 调整内容
+    let offsetY = Utils.label.space + Utils.label.iconSize
+    for (let i = 0; i < this.config.subtitles.length; i++) {
+      let text = this.config.subtitles[i]
+      let subtitle = this.subtitles[i]
+      if (!subtitle) {
+        subtitle = this.createSubtitle({
+          x: 6,
+          y: offsetY,
+          text: text
+        })
+        this.subtitles.push(subtitle)
+        this.body.add(subtitle)
+      } else {
+        subtitle.text(text)
+        subtitle.y(offsetY)
+      }
+      offsetY += 12 + Utils.label.space
+    }
+
+    if (this.subtitles.length > this.config.subtitles.length) {
+      let nouse = this.subtitles.splice(this.config.subtitles.length, this.subtitles.length - this.config.subtitles.length)
+      nouse.forEach((item) => {
+        item.destroy()
+      })
+    }
+    this.adjust()
   }
 
   /**

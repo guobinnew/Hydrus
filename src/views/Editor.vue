@@ -91,12 +91,12 @@ import Aquila from '../components/aquila';
           cachekey: 'hydruscache',
         },
         nodeTypes: {
-          selector: 'selector',
-          sequence: 'sequence',
-          parallel: 'parallel',
-          task: 'task',
-          decorator: 'decorator',
-          service: 'service'
+          selector: 'Selector',
+          sequence: 'Sequence',
+          parallel: 'Parallel',
+          task: 'Task',
+          decorator: 'Decorator',
+          service: 'Service'
         },
         dialogs: {
           elementModel: {
@@ -137,6 +137,34 @@ import Aquila from '../components/aquila';
         this.size.height = this.$el.clientHeight
         this.scene.stage.resize(this.size.width, this.size.height)
       },
+      handleEditCommand(node){
+        console.log('dddddd', node, this)
+        if (!node) {
+          return
+        }
+        let parent = node.parent()
+        let command = node.nodeType()
+        let model = null
+        if (node.isType('label')) {
+          model = this.dialogs.elementModel
+          model.form.subtitles = [].concat(node.getSubtitles())
+          model.form.title = node.getTitle()
+        } else if (node.isType('entity')) {
+          model = this.dialogs.entityModel
+          model.form.subtitles = [].concat(node.label().getSubtitles())
+          model.form.title = node.label().getTitle()
+        } else {
+          this.$message.error('Unknown node - ' + command)
+          return
+        }
+
+        model.title = 'Edit ' + this.nodeTypes[command]
+        model.form.parent = parent.label().getTitle()
+        model.host = node
+        model.action = 'edit'
+        model.form.type = command
+        model.visible = true
+      },
       handleAddCommand(command) {
         // 获取当前选中节点
         let parent = this.scene.stage.selectedNode()
@@ -153,19 +181,13 @@ import Aquila from '../components/aquila';
              return
           }
           model = this.dialogs.elementModel
-          model.title = 'Add Decorator'
-          model.form.parent = parent.labelTitle()
           model.form.subtitles = ['condition']
-         
-          this.dialogs.elementModel.visible = true
         } else if (command === 'service') {
           if (!parent.canAcceptService()){
              this.$message.error('Selected Node can not add ' + command)
              return
           }
           model = this.dialogs.elementModel
-          model.title = 'Add Service'
-          model.form.parent = parent.labelTitle()
           model.form.subtitles = [command]
         } else if (command === 'selector') {
           if (!parent.canAcceptChild()){
@@ -173,8 +195,6 @@ import Aquila from '../components/aquila';
              return
           }
           model = this.dialogs.entityModel
-          model.title = 'Add Selector'
-          model.form.parent = parent.labelTitle()
           model.form.subtitles = [command]
         } else if (command === 'sequence') {
            if (!parent.canAcceptChild()){
@@ -182,8 +202,6 @@ import Aquila from '../components/aquila';
              return
           }
           model = this.dialogs.entityModel
-          model.title = 'Add Sequence'
-          model.form.parent = parent.labelTitle()
           model.form.subtitles = [command]
         } else if (command === 'parallel') {
            if (!parent.canAcceptChild()){
@@ -191,8 +209,6 @@ import Aquila from '../components/aquila';
              return
           }
           model = this.dialogs.entityModel
-          model.title = 'Add Parallel'
-          model.form.parent = parent.labelTitle()
           model.form.subtitles = [command]
         } else if (command === 'task') {
            if (!parent.canAcceptChild()){
@@ -200,14 +216,14 @@ import Aquila from '../components/aquila';
              return
           }
           model = this.dialogs.entityModel
-          model.title = 'Add Task'
-          model.form.parent = parent.labelTitle()
           model.form.subtitles = [command]
         } else {
           this.$message.error('Unknown Command - ' + command)
           return
         }
 
+        model.title = 'Add ' + this.nodeTypes[command]
+        model.form.parent = parent.label().getTitle()
         model.host = parent
         model.action = 'add'
         model.form.type = command
@@ -234,19 +250,19 @@ import Aquila from '../components/aquila';
                 model.visible = false
               }
           })
-         } else if (action === 'edit') {
+         } else if (model.action === 'edit') {
           
            this.$refs['editElement'].validate((valid) => {
              if (valid) {
               // 修改节点属性
-
-
+              model.host.setTitle(model.form.title)
+              model.host.setSubtitles(model.form.subtitles)
+              model.parent.adjust
               this.scene.stage.refresh()
               model.visible = false
              }
            })
-
-         } else {
+         } else { // 其余动作
 
          }
       },
@@ -273,13 +289,14 @@ import Aquila from '../components/aquila';
                 model.visible = false
               }
           })
-         } else if (action === 'edit') {
+         } else if (model.action === 'edit') {
           
            this.$refs['editEntity'].validate((valid) => {
              if (valid) {
               // 修改节点属性
-
-
+              model.host.label().setTitle(model.form.title)
+              model.host.label().setSubtitles(model.form.subtitles)
+              model.host.adjust()
               this.scene.stage.refresh()
               model.visible = false
              }
@@ -363,13 +380,28 @@ import Aquila from '../components/aquila';
         this.scene.stage.reset()
       },
       undo(){
-
+        this.$message({
+          message: 'Coming soon',
+          type: 'info',
+          duration: 2000
+        })
       },
       redo(){
-
+        this.$message({
+          message: 'Coming soon',
+          type: 'info',
+          duration: 2000
+        })
       },
       clear(){
-        this.scene.stage.clear()
+         this.$confirm('Are you sure?', 'Tip', {
+          confirmButtonText: 'Ok',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        }).then(() => {
+         this.scene.stage.clear()
+        }).catch(() => {         
+        })
       },
       test(){
         // Demo Tree JSON
@@ -533,7 +565,12 @@ import Aquila from '../components/aquila';
       this.scene.stage = Corvus.init({
         container: 'scene',    //container 用来容纳舞台的容器
         width: this.size.width,
-        height: this.size.height
+        height: this.size.height,
+        events: {
+          edit: (node) => {
+            this.handleEditCommand(node)
+          }
+        }
       })
 
       // 测试

@@ -44,14 +44,20 @@
         text-align: left;
 
     }
+
     .el-tag + .el-tag {
         margin-left: 10px;
+    }
+   
+    .el-tag {
+        margin-top: 4px;
     }
 
     .button-new-tag {
         margin-left: 10px;
+        margin-top: 4px;
         height: 32px;
-        line-height: 30px;
+        line-height: 32px;
         padding-top: 0;
         padding-bottom: 0;
     }
@@ -59,6 +65,7 @@
     .input-new-tag {
         width: 90px;
         margin-left: 10px;
+        margin-top: 4px;
         vertical-align: bottom;
     }
 

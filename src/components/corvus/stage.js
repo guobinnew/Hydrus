@@ -16,7 +16,8 @@ class BTStage {
     this.options = {
       draggable: true,
       canZoom: true,
-      canWheelZoom: true
+      canWheelZoom: true,
+      events: {}
     }
     Aquila.Utils.lodash.merge(this.options, options)
     this.stage = new Konva.Stage(this.options)
@@ -80,6 +81,7 @@ class BTStage {
 
     // 鼠标事件
     this.stage.on('mousedown', (evt) => {
+      console.log('mousedown')
       let shape = evt.target
       let node = this.findNodeParent(shape)
       if (node && node.nodeType() === 'label') {
@@ -121,6 +123,13 @@ class BTStage {
           this.isDraging = true
           this.dragMarker.startDrag()
         //}
+      }
+    })
+
+    this.stage.on('dblclick', (evt) => {
+      console.log('dbclick', this.select)
+      if (this.select && this.select !== this.root) {
+        this.options.events.edit && this.options.events.edit(this.select)
       }
     })
 

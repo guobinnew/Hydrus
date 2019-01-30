@@ -835,12 +835,11 @@ class BTEntityNode extends BTNode {
     this.adjust()
   }
 
-
   /**
    * 
    */
-  labelTitle () {
-    return this.config.label.title
+  label () {
+    return this.title
   }
 
   /**
