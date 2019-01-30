@@ -12,7 +12,6 @@ class BTNode {
       stroke: '#000000',
       strokeWidth: 1,
       dragDistance: Utils.node.dragDistance,
-      uid: uniqid(), // 自动生成,
       type: 'node',
       names: { node: true },
       canClose: true,
@@ -20,6 +19,7 @@ class BTNode {
       canMove: false
     }, config)
  
+    this.config.uid = uniqid() // 自动生成,
     this.config.names[this.config.type] = true
     this.isSelected = false
     this.root = new Konva.Group({
@@ -222,13 +222,13 @@ class BTNode {
    */
   adjust (option) {
     let needWidth = Utils.node.minWidth
-    let stage = this.stage()
-    let zoom = stage ? stage.zoom : 1.0
-    let bbox = this.body.getClientRect()
-    needWidth = Math.max(needWidth, bbox.width / zoom)
+    let bbox = this.body.getClientRect({
+      skipTransform: true
+    })
+    needWidth = Math.max(needWidth, bbox.width)
 
     this.resizeWidth(needWidth)
-    this.background.height(bbox.height / zoom + 8)
+    this.background.height(bbox.height + 8)
   }
 
   /**

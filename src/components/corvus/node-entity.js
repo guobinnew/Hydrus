@@ -98,7 +98,6 @@ class BTEntityNode extends BTNode {
       this.isExpanding = true
       this.expand = this.createExpandButton({
         size: 12,
-        uid: this.config.uid,
         action: this.toggleExpand.bind(this)
       })
       this.root.add(this.expand)
@@ -271,7 +270,6 @@ class BTEntityNode extends BTNode {
       visible: !opt.isExpanding
     })
     expand.add(vline)
-    expand.setAttr('@pid', opt.uid)
     expand.on('mousedown', opt.action)
 
     expand.on('mouseout', function () {
@@ -302,7 +300,12 @@ class BTEntityNode extends BTNode {
   addDecorator (config, index = -1, adjust = true) {
     let dec = new BTDecoratorNode(config)
     this.body.add(dec.knode())
-    this.decorators.splice(index, 0, dec)
+    if (index < 0 || index > this.decorators.length) {
+      this.decorators.push(dec)
+    } else {
+      this.decorators.splice(index, 0, dec)
+    }
+    
     if (adjust) {
       this.adjust({
         downward: true,
@@ -321,7 +324,11 @@ class BTEntityNode extends BTNode {
   addService (config, index = -1, adjust = true) {
     let ser = new BTServiceNode(config)
     this.body.add(ser.knode())
-    this.services.splice(index, 0, ser)
+    if (index < 0 || index > this.services.length) {
+      this.services.push(ser)
+    } else {
+      this.services.splice(index, 0, ser)
+    }
     if (adjust) {
       this.adjust({
         downward: true,
