@@ -17,6 +17,7 @@ class BTStage {
       draggable: true,
       canZoom: true,
       canWheelZoom: true,
+      readonly: false,
       events: {}
     }
     Aquila.Utils.lodash.merge(this.options, options)
@@ -81,7 +82,6 @@ class BTStage {
 
     // 鼠标事件
     this.stage.on('mousedown', (evt) => {
-      console.log('mousedown')
       let shape = evt.target
       let node = this.findNodeParent(shape)
       if (node && node.nodeType() === 'label') {
@@ -117,7 +117,7 @@ class BTStage {
     this.stage.on('mousemove', (evt) => {
       this.mousePos = this.stage.getPointerPosition()
       let drag = this.dragMarker.getAttr('@drag')
-      if (drag && !this.isDraging) {
+      if (drag && !this.isDraging && !this.options.readonly) {
         //let dist = Math.sqrt(Math.pow(this.mousePos.x - this.selectPos.x, 2) + Math.pow(this.mousePos.y - this.selectPos.y, 2))
         //if (dist >= Utils.node.dragDistance) {
           this.isDraging = true
@@ -127,8 +127,7 @@ class BTStage {
     })
 
     this.stage.on('dblclick', (evt) => {
-      console.log('dbclick', this.select)
-      if (this.select && this.select !== this.root) {
+      if (!this.options.readonly && this.select && this.select !== this.root) {
         this.options.events.edit && this.options.events.edit(this.select)
       }
     })
@@ -137,7 +136,7 @@ class BTStage {
     })
 
     this.stage.on('dragmove', (evt) => {
-      if (evt.target instanceof Konva.Stage) {
+      if (evt.target instanceof Konva.Stage || this.options.readonly) {
         return
       }
 
@@ -551,6 +550,7 @@ class BTStage {
     this.root.adjust({
       downward: true
     })
+    this.root.updateOrder(-1)
     // 如果清除之前缓存，则重新构建新缓存
     if (cache) {
       this.snapshot()
@@ -569,6 +569,13 @@ class BTStage {
       json.root = top.toJson()
     }
     return Aquila.Utils.common.clone(json)
+  }
+ 
+  /**
+   * 保存为Image
+   */
+  saveToImage () {
+
   }
 
   /**

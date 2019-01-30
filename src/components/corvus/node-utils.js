@@ -23,6 +23,7 @@ const Utils = {
     space: 8,
     fontSize: 16,
     subFontSize: 12,
+    orderFontSize: 10,
     dropHeight: 2
   },
   link: {

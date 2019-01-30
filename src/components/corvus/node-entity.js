@@ -210,7 +210,7 @@ class BTEntityNode extends BTNode {
   }
 
 
-    /**
+  /**
    * 创建expand按钮
    * @param option
    * {
@@ -867,6 +867,49 @@ class BTEntityNode extends BTNode {
       json.children.push(child.toJson())
     }
     return json
+  }
+
+  /**
+   * 计算访问次序
+   */
+  updateOrder (start = -1) {
+    console.log('entity order =', start)
+    if (start < 0) { // 所有order都为-1
+      for (let elem of this.elements()) {
+        elem.order(-1)
+      }
+      for (let child of this.children) {
+        child.updateOrder()
+      }
+      return -1
+    }
+
+    let order = start
+    if (order === 0) {
+      // top节点
+      for (let dec of this.decorators) {
+        dec.order(-1)
+      }
+    } else {
+      for (let dec of this.decorators) {
+        dec.order(order++)
+      }
+    }
+
+    console.log('=====label======', order)
+    this.label().order(order++)
+
+    for (let ser of this.services) {
+      ser.order(order++)
+    }
+
+    // 更新孩子节点
+    for (let child of this.children) {
+      order = child.updateOrder(order)
+    }
+    
+    // 返回最后的order
+    return order
   }
 
   /**

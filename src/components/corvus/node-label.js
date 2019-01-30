@@ -14,7 +14,8 @@ class BTLabelNode extends BTNode {
       names: { label: true },
       icon: 'default',
       title: '',
-      subtitles: []
+      subtitles: [],
+      order: -1  // 表示无效
     }, config))
 
     // 投放区
@@ -96,6 +97,88 @@ class BTLabelNode extends BTNode {
       offsetY += 12 + Utils.label.space
     }
     this.root.add(this.body)
+
+    // order
+    this.orderZone = this.createOrder({
+      y: 4,
+      number: this.config.order
+    })
+    this.root.add(this.orderZone)
+  }
+
+  /**
+   * 创建expand按钮
+   * @param option
+   * {
+   *   x:
+   *   y:
+   *   size:
+   *   background:
+   *   text:
+   * }
+   */
+  createOrder (option) {
+    let opt = Aquila.Utils.lodash.merge({
+      x: 0,
+      y: 0,
+      size: 14,
+      background: '#ddd',
+      stroke: '#999',
+      strokeWidth: 2,
+      lineCap: 'round',
+      lineJoin: 'round',
+      number: -1
+    }, option)
+
+    // order按钮
+    let order = new Konva.Group({
+      x: opt.x,
+      y: opt.y,
+      name: 'label-order',
+      visible: opt.number >= -1
+    })
+
+    let bg = new Konva.Circle({
+      x: 0,
+      y: 0,
+      radius: opt.size / 2,
+      fill: opt.background,
+      stroke: opt.stroke,
+      strokeWidth: 1
+    })
+    order.add(bg)
+
+    let number = new Konva.Text({
+      x: 0,
+      y: -Utils.label.orderFontSize / 2 + 1,
+      text: opt.number,
+      fontSize: Utils.label.orderFontSize,
+      fill: opt.stroke,
+      draggable: false
+    })
+    number.offsetX(number.width() / 2)
+    order.add(number)
+   
+    order.on('mouseout', function () {
+      bg.setAttr('fill', opt.background)
+      number.setAttr('fill', opt.stroke)
+      this.getLayer().draw()
+    })
+
+    order.on('mouseover', function () {
+      bg.setAttr('fill', '#FF3030')
+      number.setAttr('fill', '#FFC125')
+      this.getLayer().draw()
+    })
+
+    // 必须手动刷新显示
+    order.setNumber = function (num) {
+      number.visible(num >= -1)
+      number.text('' + num)
+      number.offsetX(number.width() / 2)
+    }
+
+    return order
   }
 
   /**
@@ -112,6 +195,19 @@ class BTLabelNode extends BTNode {
       draggable: false
     })
   }
+
+  /**
+   * 修改order
+   * @param {*} i 
+   */
+  order (i) {
+    if (i == null) {
+      return this.config.order
+    }
+    this.config.order = i
+    this.orderZone.setNumber(i)
+  }
+
   /**
    * 
    */
@@ -226,7 +322,6 @@ class BTLabelNode extends BTNode {
     this.resizeWidth(needWidth)
     this.background.height(bbox.height / zoom + 8)
   }
-
 }
 
 export default BTLabelNode

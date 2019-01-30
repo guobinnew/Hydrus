@@ -122,7 +122,8 @@
       this.scene.stage = Corvus.init({
         container: 'scene',    //container 用来容纳舞台的容器
         width: this.size.width,
-        height: this.size.height
+        height: this.size.height,
+        readonly: true
       })
     }
   }

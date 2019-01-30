@@ -9,15 +9,28 @@ class BTRootNode extends BTEntityNode {
   constructor (config) {
     super(Aquila.Utils.lodash.merge({
       acceptDecorator: false,
+      acceptService: false,
       canMove: false,
       canClose: false,
       type: 'root',
       label: {
         icon: 'root',
         title: 'Root',
-        subtitles: ['root']
+        subtitles: ['root'],
+        order: -2
       }
     }, config))
+  }
+
+  /**
+   * 计算访问次序
+   */
+  updateOrder (start) {
+    console.log('========', start, this.children)
+    this.label().order(-2) // 隐藏不显示
+    if (this.children.length > 0) {
+      this.children[0].updateOrder(0)
+    }
   }
 
   /**

@@ -11,6 +11,7 @@ const Corvus = {
    *    draggable: false  // 是否允许内容拖放
    *    canZoom: true,  // 是否允许缩放
    *    canWheelZoom: true // 是否允许滚轮缩放
+   *    readonly: false // 只读模式
    * }
    * @returns {Stage}
    */

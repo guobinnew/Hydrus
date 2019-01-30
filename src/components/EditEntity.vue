@@ -44,6 +44,7 @@
         text-align: left;
 
     }
+    
     .el-tag + .el-tag {
         margin-left: 10px;
     }
