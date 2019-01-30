@@ -26,11 +26,11 @@ class BTRootNode extends BTEntityNode {
    * 计算访问次序
    */
   updateOrder (start) {
-    console.log('========', start, this.children)
     this.label().order(-2) // 隐藏不显示
     if (this.children.length > 0) {
       this.children[0].updateOrder(0)
     }
+    this.stage().refresh()
   }
 
   /**

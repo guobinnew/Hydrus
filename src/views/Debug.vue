@@ -5,6 +5,9 @@
       <el-row>
         <el-button-group>
           <el-button type="primary" icon="fa fa-folder-open" @click="load"></el-button>
+          <el-button type="primary" icon="fa fa-search-plus" @click="zoomIn"></el-button>
+          <el-button type="primary" icon="fa fa-search-minus" @click="zoomOut"></el-button>
+          <el-button type="primary" icon="fa fa-retweet" @click="reset"></el-button>
         </el-button-group>
       </el-row>
     </div>

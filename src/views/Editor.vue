@@ -246,6 +246,7 @@ import Aquila from '../components/aquila';
                 } else if (model.form.type === 'service') {
                   model.host.addService(config)
                 }
+                this.scene.stage.updateOrder()
                 this.scene.stage.refresh()
                 model.visible = false
               }
@@ -257,7 +258,7 @@ import Aquila from '../components/aquila';
               // 修改节点属性
               model.host.setTitle(model.form.title)
               model.host.setSubtitles(model.form.subtitles)
-              model.parent.adjust
+              model.host.parent().adjust()
               this.scene.stage.refresh()
               model.visible = false
              }
@@ -285,6 +286,7 @@ import Aquila from '../components/aquila';
 
                 let child = this.scene.stage.createEntity(data)
                 model.host.addChild(child)
+                this.scene.stage.updateOrder()
                 this.scene.stage.refresh()
                 model.visible = false
               }

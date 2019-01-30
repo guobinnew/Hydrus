@@ -23,6 +23,7 @@ class BTStage {
     Aquila.Utils.lodash.merge(this.options, options)
     this.stage = new Konva.Stage(this.options)
     this.stage.setAttr('@stage', this)
+
     this.root = null
 
     this.layers = {}
@@ -105,6 +106,10 @@ class BTStage {
       }
 
       this.refresh()
+
+      if (this.select) {
+        console.log(this.select.config)
+      }
     })
 
     this.stage.on('mouseup', (evt) => {
@@ -244,15 +249,73 @@ class BTStage {
             drop.node.setChildDropping(-1)
             drop.node.insertChild(drag, drop.index)
           }
-          drop.node && drop.node.refresh()
         }
+        this.updateOrder()
         this.dragMarker.setAttr('@drag', null)
         this.isDraging = false
         this.dragMarker.stopDrag()
       }
     })
-
     this.refresh()
+
+    // focus
+    this.cache = null
+    let container = this.stage.container()
+    container.tabIndex = 1
+    container.focus()
+
+    container.addEventListener('keydown', (evt) => {
+      if (evt.ctrlKey === true) {
+        if (evt.keyCode === 67) { // C
+          if (this.select && this.select !== this.root) { // Root节点不能复制 
+            this.cache = Aquila.Utils.common.clone(this.select.toJson())
+          }
+        } else if (evt.keyCode === 86) { // V
+          if (this.cache) {
+            // 判断当前选中节点
+            let sel = this.selectedNode()
+            if (sel && sel.isType('label')) {
+              sel = sel.parent()
+            }
+            // 如果是Element
+            if (this.cache.config.names['label']) {
+              // 判断节点是否能够接受
+              if (this.cache.type === 'decorator' && sel.canAcceptDecorator()) {
+                sel.addDecorator(this.cache.config)
+              } else if (this.cache.type === 'service' && sel.canAcceptService()) {
+                sel.addService(this.cache.config)
+              } else {
+                return
+              }
+            } else if (this.cache.config.names['entity']) {
+              if ((sel === this.root) && this.topNode()) {
+                sel = this.topNode()
+              }
+
+              if (sel.canAcceptChild()) {
+                let n = this.createEntity(this.cache)
+                if (n) {
+                  sel.addChild(n, false)
+                  sel.adjust({
+                    downward: true,
+                    upward: true
+                  })
+                } else {
+                  return
+                }
+              }
+            }
+            this.updateOrder()
+          }
+        } else {
+          return
+        }
+      } else {
+        return
+      }
+      evt.preventDefault()
+      this.layers.model.batchDraw()
+    });
   }
 
   /**
@@ -268,8 +331,8 @@ class BTStage {
       this.actions.splice(this.actionIndex + 1, this.actions.length - this.actionIndex - 1)
     }
 
-    //let cache = this.saveToJson()
-    //this.actions.push(cache)
+    let cache = this.saveToJson()
+    this.actions.push(cache)
     this.actionIndex = this.actions.length - 1
   }
 
@@ -278,6 +341,10 @@ class BTStage {
    */
   refresh () {
     this.stage.draw()
+  }
+
+  updateOrder () {
+    this.root.updateOrder(-1)
   }
 
   /**
@@ -379,13 +446,6 @@ class BTStage {
   }
 
   /**
-   * 更新节点访问次序
-   */
-  updateOrder () {
-
-  }
-
-  /**
    * 改变大小
    * @param w
    * @param h
@@ -443,6 +503,12 @@ class BTStage {
     return this.select ? this.select : this.root
   }
 
+  /**
+   * 顶层节点
+   */
+  topNode () {
+    return this.root.children[0]
+  }
   /**
    * 清空编辑器，不能撤销
    * @param cache boolean 是否清除快照缓冲
@@ -550,7 +616,8 @@ class BTStage {
     this.root.adjust({
       downward: true
     })
-    this.root.updateOrder(-1)
+    this.updateOrder()
+    
     // 如果清除之前缓存，则重新构建新缓存
     if (cache) {
       this.snapshot()

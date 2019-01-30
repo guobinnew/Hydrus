@@ -573,7 +573,8 @@ class BTEntityNode extends BTNode {
     this.addChildLink()
     if (adjust) {
       this.adjust({
-        downward: true
+        downward: true,
+        upward: true
       })
       this.refresh()
     }
@@ -896,7 +897,6 @@ class BTEntityNode extends BTNode {
       }
     }
 
-    console.log('=====label======', order)
     this.label().order(order++)
 
     for (let ser of this.services) {
