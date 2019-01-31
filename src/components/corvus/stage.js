@@ -295,11 +295,7 @@ class BTStage {
               if (sel.canAcceptChild()) {
                 let n = this.createEntity(this.cache)
                 if (n) {
-                  sel.addChild(n, false)
-                  sel.adjust({
-                    downward: true,
-                    upward: true
-                  })
+                  sel.addChild(n)
                 } else {
                   return
                 }

@@ -2,14 +2,14 @@
   <div class="container" v-resize="onContainerResize">
     <div id="scene"></div>
     <div class="menu">
-      <el-row>
-        <el-button-group>
-          <el-button type="primary" icon="fa fa-folder-open" @click="load"></el-button>
-          <el-button type="primary" icon="fa fa-search-plus" @click="zoomIn"></el-button>
-          <el-button type="primary" icon="fa fa-search-minus" @click="zoomOut"></el-button>
-          <el-button type="primary" icon="fa fa-retweet" @click="reset"></el-button>
-        </el-button-group>
-      </el-row>
+      <Row>
+        <ButtonGroup>
+          <Button type="primary" icon="md-folder-open" @click="load"></Button>
+          <Button type="primary" icon="md-add-circle" @click="zoomIn"></Button>
+          <Button type="primary" icon="md-remove-circle" @click="zoomOut"></Button>
+          <Button type="primary" icon="md-refresh-circle" @click="reset"></Button>
+        </ButtonGroup>
+      </Row>
     </div>
     <input type="file" id="hydrusfile" style="display: none" @change="loadLocalFile">
   </div>
@@ -19,7 +19,6 @@
 .container {
   overflow: hidden;
   height: 100%;
-  line-height: 40px;
 }
 
 #scene {

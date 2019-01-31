@@ -178,7 +178,6 @@ class BTNode {
       lineJoin: 'round'
     })
     close.add(vline)
-    close.setAttr('@pid', opt.uid)
     close.on('mousedown', opt.action)
 
     close.on('mouseout', function () {

@@ -2,43 +2,43 @@
   <div class="container" v-resize="onContainerResize">
     <div id="scene"></div>
     <div class="menu">
-      <el-row>
-        <el-button-group>
-          <el-button type="primary" icon="fa fa-folder-open" @click="load"></el-button>
-          <el-button type="primary" icon="fa fa-floppy-o" @click="save"></el-button>
-          <el-button type="primary" icon="fa fa-cloud-download" @click="loadCache"></el-button>
-          <el-button type="primary" icon="fa fa-cloud-upload" @click="saveCache"></el-button>
-          <el-button type="primary" icon="fa fa-search-plus" @click="zoomIn"></el-button>
-          <el-button type="primary" icon="fa fa-search-minus" @click="zoomOut"></el-button>
-          <el-button type="primary" icon="fa fa-retweet" @click="reset"></el-button>
-          <el-button type="primary" icon="fa fa-undo" @click="undo"></el-button>
-          <el-button type="primary" icon="fa fa-repeat" @click="redo"></el-button>
-          <el-button type="primary" icon="fa fa-trash " @click="clear"></el-button>
+      <Row>
+        <ButtonGroup>
+          <Button type="primary" icon="md-folder-open" @click="load"></Button>
+          <Button type="primary" icon="md-archive" @click="save"></Button>
+          <Button type="primary" icon="md-cloud-download" @click="loadCache"></Button>
+          <Button type="primary" icon="md-cloud-upload" @click="saveCache"></Button>
+          <Button type="primary" icon="md-add-circle" @click="zoomIn"></Button>
+          <Button type="primary" icon="md-remove-circle" @click="zoomOut"></Button>
+          <Button type="primary" icon="md-refresh-circle" @click="reset"></Button>
+          <Button type="primary" icon="md-undo" @click="undo"></Button>
+          <Button type="primary" icon="md-redo" @click="redo"></Button>
+          <Button type="primary" icon="md-trash " @click="clear"></Button>
 
-          <el-dropdown @command="handleAddCommand">
-              <el-button type="danger" icon="el-icon-menu">
-               <i class="el-icon-arrow-down el-icon--right"></i>
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="(val, key) in nodeTypes" :command="key">{{val}}</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-        </el-button-group>
-      </el-row>
+          <Dropdown @command="handleAddCommand">
+              <Button type="error" icon="ios-cube">
+               <Icon type="ios-arrow-down"></Icon>
+              </Button>
+              <DropdownMenu slot="list">
+                <DropdownItem v-for="(val, key) in nodeTypes" :name="key">{{val}}</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+        </ButtonGroup>
+      </Row>
     </div>
     <input type="file" id="hydrusfile" style="display: none" @change="loadLocalFile">
         <el-dialog :title="dialogs.elementModel.title" :visible.sync="dialogs.elementModel.visible" :close-on-click-modal="false" width="60%">
             <EditElement :model="dialogs.elementModel" ref="editElement"></EditElement>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogs.elementModel.visible = false">Cancel</el-button>
-                <el-button type="primary" @click="handleElementModel">Ok</el-button>
+                <Button @click="dialogs.elementModel.visible = false">Cancel</Button>
+                <Button type="primary" @click="handleElementModel">Ok</Button>
             </div>
         </el-dialog>
         <el-dialog :title="dialogs.entityModel.title" :visible.sync="dialogs.entityModel.visible" :close-on-click-modal="false" width="60%">
             <EditEntity :model="dialogs.entityModel" ref="editEntity"></EditEntity>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogs.entityModel.visible = false">Cancel</el-button>
-                <el-button type="primary" @click="handleEntityModel">Ok</el-button>
+                <Button @click="dialogs.entityModel.visible = false">Cancel</Button>
+                <Button type="primary" @click="handleEntityModel">Ok</Button>
             </div>
         </el-dialog>
 
@@ -49,7 +49,6 @@
 .container {
   overflow: hidden;
   height: 100%;
-  line-height: 40px;
 }
 
 #scene {
@@ -66,6 +65,10 @@
   text-align: left;
   margin-left: 40px;
   margin-top: 10px;
+}
+
+.ivu-dropdown {
+  margin-left: 10px;
 }
 </style>
 

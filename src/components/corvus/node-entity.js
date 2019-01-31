@@ -881,7 +881,6 @@ class BTEntityNode extends BTNode {
    * 计算访问次序
    */
   updateOrder (start = -1) {
-    console.log('entity order =', start)
     if (start < 0) { // 所有order都为-1
       for (let elem of this.elements()) {
         elem.order(-1)
