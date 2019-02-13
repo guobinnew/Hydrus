@@ -41,7 +41,7 @@ class BTNode {
       this.close = this.createCloseButton({
         size: 10,
         uid: this.config.uid,
-        action: this.destroy
+        action: this.destroy.bind(this)
       })
       this.root.add(this.close)
     }
@@ -178,7 +178,9 @@ class BTNode {
       lineJoin: 'round'
     })
     close.add(vline)
-    close.on('mousedown', opt.action)
+    close.on('mousedown', function() {
+      opt.action && opt.action()
+    })
 
     close.on('mouseout', function () {
       vline.setAttr('stroke', opt.stroke)

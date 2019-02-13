@@ -20,6 +20,17 @@ class BTDecoratorNode extends BTLabelNode {
       acceptTypes: ['decorator']
     }, config))
   }
+
+  destroy (self = true, notify = true) {
+    // 通知父节点删除
+    if (notify) {
+      let parent = this.parent()
+      if (parent) {
+        parent.removeDecorator(this)
+      }
+    }
+    this.root.destroy()
+  }
 }
 
 export default BTDecoratorNode

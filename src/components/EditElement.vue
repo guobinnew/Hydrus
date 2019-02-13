@@ -5,8 +5,8 @@
                     <Tag color="success">{{ model.form.parent }}</Tag>
                 </FormItem>
                  <FormItem label="Type" prop="type">
-                    <RadioGroup v-model="model.form.type" :disabled="model.action !== 'add' " @on-change="handleTypeChange">
-                        <Radio v-for="(val, key) in nodeTypes" :label="key">{{val}}</Radio>
+                    <RadioGroup v-model="model.form.type" @on-change="handleTypeChange">
+                        <Radio v-for="(val, key) in nodeTypes" :label="key" :disabled="model.action !== 'add' ">{{val}}</Radio>
                     </RadioGroup>
                 </FormItem>
                 <FormItem label="Title" prop="title" >

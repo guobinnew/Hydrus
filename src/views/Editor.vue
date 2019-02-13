@@ -268,6 +268,7 @@ import Aquila from '../components/aquila';
                 }
                 this.scene.stage.updateOrder()
                 this.scene.stage.refresh()
+                this.scene.stage.snapshot()
                 model.visible = false
               }
           })
@@ -280,6 +281,7 @@ import Aquila from '../components/aquila';
               model.host.setSubtitles(model.form.subtitles)
               model.host.parent().adjust()
               this.scene.stage.refresh()
+              this.scene.stage.snapshot()
               model.visible = false
              }
            })
@@ -308,6 +310,7 @@ import Aquila from '../components/aquila';
                 model.host.addChild(child)
                 this.scene.stage.updateOrder()
                 this.scene.stage.refresh()
+                this.scene.stage.snapshot()
                 model.visible = false
               }
           })
@@ -320,6 +323,7 @@ import Aquila from '../components/aquila';
               model.host.label().setSubtitles(model.form.subtitles)
               model.host.adjust()
               this.scene.stage.refresh()
+              this.scene.stage.snapshot()
               model.visible = false
              }
            })
@@ -398,16 +402,10 @@ import Aquila from '../components/aquila';
         this.scene.stage.reset()
       },
       undo(){
-        this.$Message.info({
-          content: 'Coming soon',
-          duration: 2
-        })
+        this.scene.stage.undo()
       },
       redo(){
-        this.$Message.info({
-          content: 'Coming soon',
-          duration: 2
-        })
+        this.scene.stage.redo()
       },
       clear(){
          this.$Modal.confirm({
