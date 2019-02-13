@@ -1,42 +1,46 @@
  <template>
     <div class="container" id="element">
-            <el-form :model="model.form" label-width="120px" size="small" status-icon
-                     :rules="rules" ref="form">
-                <el-form-item label="Parent">
-                    <el-tag type="success">{{ model.form.parent }}</el-tag>
-                </el-form-item>
-                 <el-form-item label="Type" prop="type">
-                    <el-radio-group v-model="model.form.type" :disabled="model.action !== 'add' ">
-                        <el-radio-button v-for="(val, key) in nodeTypes" :label="key" name="type">{{val}}</el-radio-button>
-                    </el-radio-group>
-                </el-form-item>
-                <el-form-item label="Title" prop="title" >
-                    <el-input v-model="model.form.title" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="Subtitiles">
-                    <el-tag
+            <Form :model="model.form" :label-width="120" :rules="rules" ref="form">
+                <FormItem label="Parent">
+                    <Tag color="success">{{ model.form.parent }}</Tag>
+                </FormItem>
+                 <FormItem label="Type" prop="type">
+                    <RadioGroup v-model="model.form.type" :disabled="model.action !== 'add' " @on-change="handleTypeChange">
+                        <Radio v-for="(val, key) in nodeTypes" :label="key">{{val}}</Radio>
+                    </RadioGroup>
+                </FormItem>
+                <FormItem label="Title" prop="title" >
+                    <Input v-model="model.form.title" placeholder="Enter title"></Input>
+                </FormItem>
+                <FormItem label="Subtitiles">
+                    <Tag
                             :key="tag"
+                            color="warning"
                             v-for="(tag, i) in model.form.subtitles"
                             :closable=" i > 0 "
-                            :disable-transitions="false"
                             @close="handleTagClose(tag)">
                         {{tag}}
-                    </el-tag>
-                    <el-input
+                    </Tag>
+                    <Input
                             class="input-new-tag"
                             v-if="inputVisible"
                             v-model="inputValue"
                             ref="saveTagInput"
                             size="small"
                             @keyup.enter.native="handleTagInputConfirm"
-                            @blur="handleTagInputConfirm"
+                            @on-blur="handleTagInputConfirm"
                     >
-                    </el-input>
-                    <el-button v-else class="button-new-tag" size="small" @click="showTagInput">
-                        +
-                    </el-button>
-                </el-form-item>
-            </el-form>
+                    </Input>
+                     <Button v-else  icon="ios-add" size="small" @click="showTagInput">
+                    </Button>
+                </FormItem>
+                <FormItem label="Invert">
+                     <i-switch v-model="model.form.invert" size="small" :disabled="model.form.type === 'service' ">
+                        <span slot="open"></span>
+                        <span slot="close"></span>
+                    </i-switch>
+                </FormItem>
+            </Form>
     </div>        
  </template>
 <style scoped>
@@ -53,20 +57,9 @@
         margin-top: 4px;
     }
 
-    .button-new-tag {
-        margin-left: 10px;
-        margin-top: 4px;
-        height: 32px;
-        line-height: 32px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
     .input-new-tag {
         width: 90px;
         margin-left: 10px;
-        margin-top: 4px;
-        vertical-align: bottom;
     }
 
 </style>
@@ -75,15 +68,6 @@
   export default {
     props: ["model"],
     data: function () {
-
-       const validateSelect = (rule, value, callback) => {
-        if (value === '') {
-          callback(new Error('不能为空'))
-        } else {
-          callback()
-        }
-      }
-
       return {
         nodeTypes: {
             decorator: 'decorator',
@@ -93,7 +77,7 @@
         inputValue: '',
         rules:{
             title: [{ required: true, message: '不能为空', trigger: 'blur' }],
-            type: [{ required: true, validator: validateSelect, trigger: 'change' }]
+            type: [{ required: true, message: '不能为空', trigger: 'change' }]
         }
       }
     },
@@ -105,7 +89,7 @@
         this.inputVisible = true
         this.$nextTick(_ => {
           this.$refs['saveTagInput'].$refs.input.focus()
-        });
+        })
       },
       handleTagInputConfirm() {
         let inputValue = this.inputValue
@@ -114,6 +98,15 @@
         }
         this.inputVisible = false
         this.inputValue = ''
+      },
+      handleTypeChange() {
+          let subs = this.model.form.subtitles.slice(1)
+          if (this.model.form.type === 'decorator') {
+              subs.splice(0,0,'condition')
+          } else {
+              subs.splice(0,0,'service')
+          }
+          this.model.form.subtitles = subs
       },
       validate(cb) {
           this.$refs['form'].validate((valid) => {

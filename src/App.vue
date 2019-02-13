@@ -105,7 +105,7 @@ export default {
   components: { ElContainer },
   data() {
     return {
-      isCollapse: true,
+      isCollapsed: true,
       activeIndex: "editor"
     };
   },

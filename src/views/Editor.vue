@@ -15,7 +15,7 @@
           <Button type="primary" icon="md-redo" @click="redo"></Button>
           <Button type="primary" icon="md-trash " @click="clear"></Button>
 
-          <Dropdown @command="handleAddCommand">
+          <Dropdown @on-click="handleAddCommand">
               <Button type="error" icon="ios-cube">
                <Icon type="ios-arrow-down"></Icon>
               </Button>
@@ -27,20 +27,20 @@
       </Row>
     </div>
     <input type="file" id="hydrusfile" style="display: none" @change="loadLocalFile">
-        <el-dialog :title="dialogs.elementModel.title" :visible.sync="dialogs.elementModel.visible" :close-on-click-modal="false" width="60%">
+        <Modal :title="dialogs.elementModel.title" v-model="dialogs.elementModel.visible" :closable="false" width="60%">
             <EditElement :model="dialogs.elementModel" ref="editElement"></EditElement>
             <div slot="footer" class="dialog-footer">
                 <Button @click="dialogs.elementModel.visible = false">Cancel</Button>
                 <Button type="primary" @click="handleElementModel">Ok</Button>
             </div>
-        </el-dialog>
-        <el-dialog :title="dialogs.entityModel.title" :visible.sync="dialogs.entityModel.visible" :close-on-click-modal="false" width="60%">
+        </Modal>
+        <Modal :title="dialogs.entityModel.title" v-model="dialogs.entityModel.visible" :closable="false" width="60%">
             <EditEntity :model="dialogs.entityModel" ref="editEntity"></EditEntity>
             <div slot="footer" class="dialog-footer">
                 <Button @click="dialogs.entityModel.visible = false">Cancel</Button>
                 <Button type="primary" @click="handleEntityModel">Ok</Button>
             </div>
-        </el-dialog>
+        </Modal>
 
   </div>
 </template>
@@ -111,7 +111,8 @@ import Aquila from '../components/aquila';
               parent: '',
               title: '',
               subtitles: [],
-              type: ''
+              type: '',
+              invert: false
             }
           },
           entityModel: {
@@ -414,7 +415,7 @@ import Aquila from '../components/aquila';
            title: 'Tip', 
            okText: 'Ok',
            cancelText: 'Cancel',
-           onOK: () => {this.scene.stage.clear()}
+           onOk: () => {this.scene.stage.clear()}
          })
       },
       test(){
