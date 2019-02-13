@@ -157,7 +157,9 @@ import Aquila from '../components/aquila';
           model.form.subtitles = [].concat(node.label().getSubtitles())
           model.form.title = node.label().getTitle()
         } else {
-          this.$message.error('Unknown node - ' + command)
+          this.$Message.error({
+            content: 'Unknown node - ' + command
+          })
           return
         }
 
@@ -180,48 +182,62 @@ import Aquila from '../components/aquila';
         let model = null
         if (command === 'decorator') {
           if (!parent.canAcceptDecorator()){
-             this.$message.error('Selected Node can not add ' + command)
-             return
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
+            return
           }
           model = this.dialogs.elementModel
           model.form.subtitles = ['condition']
         } else if (command === 'service') {
           if (!parent.canAcceptService()){
-             this.$message.error('Selected Node can not add ' + command)
+              this.$Message.error({
+               content: 'Selected Node can not add ' + command
+              })
              return
           }
           model = this.dialogs.elementModel
           model.form.subtitles = [command]
         } else if (command === 'selector') {
           if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
-             return
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
+            return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else if (command === 'sequence') {
            if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
              return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else if (command === 'parallel') {
            if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
-             return
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
+            return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else if (command === 'task') {
            if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
+             this.$Message.error({
+               content: 'Selected Node can not add ' + command
+             })
              return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else {
-          this.$message.error('Unknown Command - ' + command)
+          this.$Message.error({
+            content: 'Unknown Command - ' + command 
+          })
           return
         }
 
@@ -316,10 +332,9 @@ import Aquila from '../components/aquila';
         let name = selectedFile.name
         let size = selectedFile.size //读取选中文件的大小
         if (size === 0){
-            this.$message({
-              message: `File <${name}> is empty`,
-              type: 'error',
-              duration: 2000
+            this.$Message.error({
+              content: `File <${name}> is empty`,
+              duration: 2
             })
            return
         }
@@ -345,10 +360,9 @@ import Aquila from '../components/aquila';
       loadCache(){
         LocalForage.getItem(this.scene.cachekey, (err, value) => {
           if (err) {
-            this.$message({
-              message: 'Cache data is empty',
-              type: 'warning',
-              duration: 2000
+            this.$Message.warning({
+              content: 'Cache data is empty',
+              duration: 2
             })
             return
           }
@@ -360,18 +374,16 @@ import Aquila from '../components/aquila';
         let json = this.scene.stage.saveToJson()
         LocalForage.setItem(this.scene.cachekey, JSON.stringify(json), (err) => {
           if (err) {
-            this.$message({
-              message: 'Save failed',
-              type: 'error',
-              duration: 2000
+            this.$Message.error({
+              content: 'Save failed',
+              duration: 2
             })
             return
           }
 
-          this.$message({
-            message: 'Save success',
-            type: 'success',
-            duration: 2000
+          this.$Message.success({
+            content: 'Save success',
+            duration: 2
           })
         })
       },
@@ -385,28 +397,25 @@ import Aquila from '../components/aquila';
         this.scene.stage.reset()
       },
       undo(){
-        this.$message({
-          message: 'Coming soon',
-          type: 'info',
-          duration: 2000
+        this.$Message.info({
+          content: 'Coming soon',
+          duration: 2
         })
       },
       redo(){
-        this.$message({
-          message: 'Coming soon',
-          type: 'info',
-          duration: 2000
+        this.$Message.info({
+          content: 'Coming soon',
+          duration: 2
         })
       },
       clear(){
-         this.$confirm('Are you sure?', 'Tip', {
-          confirmButtonText: 'Ok',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }).then(() => {
-         this.scene.stage.clear()
-        }).catch(() => {         
-        })
+         this.$Modal.confirm({
+           content: 'Are you sure?',
+           title: 'Tip', 
+           okText: 'Ok',
+           cancelText: 'Cancel',
+           onOK: () => {this.scene.stage.clear()}
+         })
       },
       test(){
         // Demo Tree JSON

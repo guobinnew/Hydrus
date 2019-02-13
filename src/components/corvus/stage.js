@@ -77,6 +77,7 @@ class BTStage {
     // 当前选中的节点
     this.select = null
     this.selectPos = null
+    this.orderCache = {}
 
     // 根节点
     this.addRootNode()
@@ -307,11 +308,19 @@ class BTStage {
           return
         }
       } else {
+        if (this.select && this.select !== this.root) { // Root节点除外
+          if (evt.keyCode === 37) { // Left
+
+
+          } else if (evt.keyCode === 39) { // Right
+
+          }
+        }
         return
       }
       evt.preventDefault()
       this.layers.model.batchDraw()
-    });
+    })
   }
 
   /**
@@ -341,6 +350,15 @@ class BTStage {
 
   updateOrder () {
     this.root.updateOrder(-1)
+  }
+
+  /**
+   * 
+   * @param {*} order 
+   * @param {*} entity 
+   */
+  cacheOrder(order, entity) {
+
   }
 
   /**
