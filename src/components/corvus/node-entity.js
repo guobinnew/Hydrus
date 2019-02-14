@@ -828,6 +828,13 @@ class BTEntityNode extends BTNode {
       }
       this.root.destroy()
     }
+
+    if (notify) {
+      let stage = this.stage()
+      if (stage) {
+        stage.snapshot()
+      }
+    }
   }
 
   /**

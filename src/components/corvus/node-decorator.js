@@ -29,7 +29,15 @@ class BTDecoratorNode extends BTLabelNode {
         parent.removeDecorator(this)
       }
     }
+
     this.root.destroy()
+    
+    if (notify) {
+      let stage = this.stage()
+      if (stage) {
+        stage.snapshot()
+      }
+    }
   }
 }
 

@@ -27,6 +27,7 @@ class Behavior {
     }
 
     this.config = config
+    this.context = context
     // 关联函数
     this.convert(context, config)
 
@@ -146,7 +147,7 @@ class Decorator extends Behavior {
 
   update (delta) {
     logger.debug(`Execute Decorator -- ${this.config.label}`)
-
+    
     let res = true
     if (this.__func__) {
       let argus = [delta].concat(this.config.actor.params ? this.config.actor.params : [])
@@ -155,6 +156,14 @@ class Decorator extends Behavior {
     if (this.config.invert === true) {
       res = !res
     }
+
+    this.context.log({
+      type: 'decorator',
+      node: this.config.label,
+      action: 'judge',
+      result: res
+    })
+
     return res ? BehaviorStatus.Success : BehaviorStatus.Failure
   }
 }
@@ -171,6 +180,12 @@ class Service extends Behavior {
       let argus = [delta].concat(this.config.actor.params ? this.config.actor.params : [])
       this.__func__.apply(null, argus)
     }
+
+    this.context.log({
+      type: 'service',
+      node: this.config.label,
+      action: 'execute'
+    })
   }
 }
 
@@ -305,6 +320,13 @@ class Task extends Behavior {
       let argus = [delta].concat(this.config.actor.params ? this.config.actor.params : [])
       res = this.__func__.apply(null, argus)
     }
+
+    this.context.log({
+      type: 'task',
+      node: this.config.label,
+      action: 'execute'
+    })
+
     return res
   }
 }

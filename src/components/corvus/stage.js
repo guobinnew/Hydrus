@@ -124,11 +124,8 @@ class BTStage {
       this.mousePos = this.stage.getPointerPosition()
       let drag = this.dragMarker.getAttr('@drag')
       if (drag && !this.isDraging && !this.options.readonly) {
-        //let dist = Math.sqrt(Math.pow(this.mousePos.x - this.selectPos.x, 2) + Math.pow(this.mousePos.y - this.selectPos.y, 2))
-        //if (dist >= Utils.node.dragDistance) {
           this.isDraging = true
           this.dragMarker.startDrag()
-        //}
       }
     })
 
@@ -250,6 +247,7 @@ class BTStage {
             drop.node.setChildDropping(-1)
             drop.node.insertChild(drag, drop.index)
           }
+          this.snapshot()
         }
         this.updateOrder()
         this.dragMarker.setAttr('@drag', null)
@@ -283,8 +281,10 @@ class BTStage {
               // 判断节点是否能够接受
               if (this.cache.type === 'decorator' && sel.canAcceptDecorator()) {
                 sel.addDecorator(this.cache.config)
+                this.snapshot()
               } else if (this.cache.type === 'service' && sel.canAcceptService()) {
                 sel.addService(this.cache.config)
+                this.snapshot()
               } else {
                 return
               }
@@ -297,6 +297,7 @@ class BTStage {
                 let n = this.createEntity(this.cache)
                 if (n) {
                   sel.addChild(n)
+                  this.snapshot()
                 } else {
                   return
                 }

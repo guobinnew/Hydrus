@@ -11,6 +11,9 @@ class BTEngine {
     this.$services = data.services ? data.services : {}
     this.$tasks = data.tasks ? data.tasks : {}
     this.timestamp = null
+    this.life = 0
+    this.ticks = 0
+    this.logs = []
   }
 
   /**
@@ -43,6 +46,8 @@ class BTEngine {
 
     if (!this.timestamp) {
       this.timestamp = Utils.lodash.now()
+      this.life = 0
+      this.ticks = 0
     }
 
     if (delta == null) {
@@ -50,7 +55,35 @@ class BTEngine {
       delta = n - this.timestamp
       this.timestamp = n
     }
+    this.life += delta
+    this.ticks += 1
     this.root.update(delta)
+    // 打印日志
+    if (Utils.common.isFunction(this.$log)) {
+      this.$log.call(null, {
+        timestamp: this.life,
+        index: this.ticks,
+        delta: delta,
+        logs: this.logs
+      })
+    }
+    this.logs = []
+  }
+
+  /**
+   * 
+   * @param {*} callback 
+   */
+  setLog (callback) {
+    this.$log = callback
+  }
+
+  /**
+   * 
+   * @param {*} msg 
+   */
+  log (msg) {
+    this.logs.push(msg)
   }
 
   /**
@@ -62,6 +95,8 @@ class BTEngine {
       return
     }
     this.timestamp = null
+    this.ticks = 0
+    this.life = 0
     this.root.reset()
   }
 }

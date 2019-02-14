@@ -5,16 +5,16 @@ const d = {
     isWindowOpening: false
   },
   decorators: {
-    isHot (delta, upbound) {
+    isHot (delta, upbound = 30) {
       return this.temperature >= upbound
     },
-    isCold (delta, downbound) {
+    isCold (delta, downbound = 15) {
       return this.temperature <= downbound
     },
-    isDry (delta, downbound) {
+    isDry (delta, downbound = 10) {
       return this.humidity <= downbound
     },
-    isHumid (delta, upbound) {
+    isHumid (delta, upbound = 60) {
       return this.humidity >= upbound
     }
   },

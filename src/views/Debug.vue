@@ -35,7 +35,7 @@
             <Timeline class="output-panel">
               <TimelineItem v-for="(item,index) in simulator.outputs" :color="item.color">
                 <p class="output-time">{{index}}<span>{{item.timestamp + 'ms'}}</span></p>
-                <p>{{item.content}}</p>
+                <p v-for="text in item.content">{{text}}</p>
               </TimelineItem>
             </Timeline>
           </TabPane>
@@ -45,9 +45,9 @@
     <input type="file" id="hydrusfile" style="display: none" @change="loadLocalFile">
      <Drawer title="Script Editor" width="1024" :closable="false" v-model="scriptEditor.visible">
          <ButtonGroup class="editor-button">
-          <Button icon="md-create" @click="saveScript"></Button>
+          <Button icon="md-create" @click="saveScript">Save</Button>
         </ButtonGroup>
-         <codemirror v-model="scriptEditor.code" :options="scriptEditor.options"></codemirror>
+         <codemirror ref="code" v-model="scriptEditor.code" :options="scriptEditor.options"></codemirror>
     </Drawer>
   </div>
 </template>
@@ -117,6 +117,7 @@
   import 'codemirror/theme/monokai.css'
   import Corvus from '../components/corvus'
   import Aquila from '../components/aquila'
+  import { FastLayer } from 'konva';
 
   export default {
     components: {codemirror},
@@ -130,7 +131,6 @@
           stage: null
         },
         scriptEditor: {
-          parsed: null,
           code: '',
           options: {
             tabSize: 2,
@@ -139,24 +139,22 @@
             lineNumbers: true,
             line: true,
             matchBrackets: true,
+            autofocus: true
           },
           visible: false
         },
         simulator: {
+          blackboard: null,
+          engine: null,
+          script: null,
+          tree: null,
           loop: 1,
-          isPausing: false,
+          current: 0,
+          timer: null,
+          interval: 5,
+          isPausing: true,
           isReady: false,
           outputs: [
-            {
-              color: 'green',
-              timestamp: 0,
-              content: 'Test'
-            },
-            {
-              color: 'green',
-              timestamp: 20,
-              content: 'Test Auto'
-            }
           ]
         },
         scripts: [
@@ -223,6 +221,8 @@
       load(){
         let json = this.$store.getters.internalCache
         if (json) {
+          this.scene.cache = json
+          this.simulator.tree = this.convert(json)
           this.scene.stage.loadFromJson(json)
           // 检查脚本是否完整
         } else {
@@ -232,19 +232,127 @@
           })
         } 
       },
-      check () {
+      convert (json) {
+        this.simulator.tree = {}
+        const actors = ['task', 'decorator', 'service']
+        const walk = (node) => {
+          let n = {
+            type: node.type,
+          }
+          let idx = actors.indexOf(n.type)
+          n.label = idx > 0 ? node.config.title : node.config.label.title
 
+          // TODO 添加参数
+          if (idx >= 0) {
+            n.actor = {
+              id: n.type === 'task' ? node.config.label.script : node.config.script
+            }
+          }
+
+          // 处理孩子节点
+          n.elements = []
+          if (node.elements) {
+            for (let elem of node.elements) {
+              n.elements.push(walk(elem))
+            }
+          }
+
+          n.children = []
+           if (node.children) {
+            for (let child of node.children) {
+              n.children.push(walk(child))
+            }
+          }
+          return n
+        }
+        this.simulator.tree.root = walk(json.root)
+        
+      },
+      check () {
+        // 检测Tree中脚本是否有效
+        const errors = []
+        if (!this.simulator.tree) {
+          this.convert(this.scene.cache)
+        }
+        const tree = this.simulator.tree
+        if (!tree || !tree.root || !this.simulator.script) {
+          this.simulator.isReady = false
+          this.$Notice.error({
+              title: 'Tree Model Check',
+              desc: 'Tree Model is null or script is invalid'
+            });
+          return
+        }
+        const actors = ['task', 'decorator', 'service']
+        const validate = (node) => {
+          let idx = actors.indexOf(node.type)
+          if (idx >= 0) {
+            let container = null
+            if (idx === 0 ) {
+              container = this.simulator.script.tasks
+            } else if (idx === 1) {
+              container = this.simulator.script.decorators 
+            } else if (idx === 2) {
+              container = this.simulator.script.services 
+            }
+            if (!container || !Aquila.Utils.common.isFunction(container[node.actor.id])) {
+              errors.push({
+                label: node.label,
+                script: node.actor.id
+              })
+            }
+          }
+
+          // 处理孩子节点
+          if (node.elements) {
+            for (let elem of node.elements) {
+              validate(elem)
+            }
+          }
+
+          if (node.children) {
+            for (let child of node.children) {
+              validate(child)
+            }
+          }
+        }
+        validate(tree.root)
+
+        if (errors.length > 0) {
+          this.$Notice.success({
+              title: 'Tree Model Check',
+              duration: 0,
+              render: h => {
+                        let r = []
+                        for( let err of errors) {
+                          r.push(h('li', err.label + '->' + err.script))
+                        }
+                        return h('ul', r)
+                    }
+          });
+          this.simulator.isReady = false
+          return
+        }
+        this.simulator.isReady = true
       },
       editScript () {
         this.scriptEditor.visible = true
       },
       clearScript () {
-        this.test()
-        this.scriptEditor.parsed = {}
-        for( let r of this.scripts) {
-          r.title = r.type + '(0)'
-          r.children = []
-        }
+         this.$Modal.confirm({
+           content: 'Are you sure?',
+           title: 'Tip', 
+           okText: 'Ok',
+           cancelText: 'Cancel',
+           onOk: () => {
+              this.test()
+              this.simulator.script = {}
+              for( let r of this.scripts) {
+                r.title = r.type + '(0)'
+                r.children = []
+              }
+            }
+         })
       },
       saveScript () {
         let code = '' + this.scriptEditor.code
@@ -257,10 +365,10 @@
         }
 
         // 解析js代码
-        this.scriptEditor.parsed = eval('(function(){' + code + ';return d})()')
-        console.log('parsed', this.scriptEditor.parsed)
+        this.simulator.script = eval('(function(){' + code + ';return d})()')
+        console.log('parsed', this.simulator.script)
         // 重新生成script结构
-        if (this.scriptEditor.parsed) {
+        if (this.simulator.script) {
           const process = (obj, index, type) => {
             if (obj) {
               let list = []
@@ -275,7 +383,9 @@
             }
           }
 
-          let root = this.scriptEditor.parsed
+          let root = this.simulator.script
+          // 克隆数据
+          this.simulator.blackboard = Aquila.Utils.common.clone(this.simulator.script.data)
           process(root.data, 0, 'Variable')
           process(root.decorators, 1, 'Decorator')
           process(root.services, 2, 'Service')
@@ -317,16 +427,78 @@
 */
 `
       },
+      tick () {
+        console.log('tick')
+        this.simulator.engine && this.simulator.engine.tick()
+        this.simulator.current++
+        if (this.simulator.current < this.simulator.loop) {
+          this.simulator.timer = setTimeout(this.tick, this.simulator.interval)
+        } else {
+          this.simulator.isPausing = true
+          this.simulator.current = 0
+        }
+      },
       run () {
+        // 判断状态
+        if (!this.simulator.isReady) {
+          this.check()
+          if (!this.simulator.isReady) {
+            return
+          }
+          // 
+          if (this.simulator.engine) {
+            delete this.simulator.engine
+          }
 
+          this.simulator.engine = new Aquila.Engine({
+            data: this.simulator.blackboard,
+            decorators: this.simulator.script.decorators,
+            services: this.simulator.script.services,
+            tasks: this.simulator.script.tasks
+          })
+          this.simulator.engine.load(this.simulator.tree)
+          this.simulator.engine.setLog((log) => {
+            console.log('engine log', log)
+            if (!log) {
+              return
+            }
+            // 合并日志消息
+            let msg = {
+              timestamp: log.timestamp,
+              content: [],
+              color: 'green'
+            }
+            for(let l of log.logs) {
+              if (l.type === 'task') {
+                msg.content.push(`${l.action} Task [${l.node}]`)
+              }
+            }
+  
+            this.simulator.outputs.push(msg)
+          })
+        }
+
+        // 取消暂停
+        if (this.simulator.isPausing) {
+          if (this.simulator.current < this.simulator.loop) {
+            this.simulator.isPausing = false
+            this.simulator.timer = setTimeout(this.tick, this.simulator.interval)
+          }
+        }
       },
       stop () {
-
+        if (this.simulator.timer) {
+          clearTimeout(this.simulator.timer)
+          this.simulator.timer = null
+        }
+        this.simulator.isPausing = true
       },
       reset () {
-        this.outputs
-
-
+        this.stop()
+        this.simulator.current = 0
+        this.simulator.isReady = false
+        this.simulator.blackboard = Aquila.Utils.common.clone(this.simulator.script.data)
+        this.simulator.outputs = []
       }
     },
     mounted: function () {
