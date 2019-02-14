@@ -79,7 +79,7 @@
   import Corvus from '../components/corvus/index'
   import EditElement from '../components/EditElement.vue'
   import EditEntity from '../components/EditEntity.vue'
-import Aquila from '../components/aquila';
+import Aquila from '../components/aquila'
 
   export default {
     components: { EditElement, EditEntity },
@@ -91,7 +91,7 @@ import Aquila from '../components/aquila';
         },
         scene: {
           stage: null,
-          cachekey: 'hydruscache',
+          cachekey: 'hydruscache'
         },
         nodeTypes: {
           selector: 'Selector',
@@ -110,6 +110,7 @@ import Aquila from '../components/aquila';
             form: {
               parent: '',
               title: '',
+              script: '',
               subtitles: [],
               type: '',
               invert: false
@@ -123,6 +124,7 @@ import Aquila from '../components/aquila';
             form: {
               parent: '',
               title: '',
+              script: '',
               subtitles: [],
               type: ''
             }
@@ -142,7 +144,6 @@ import Aquila from '../components/aquila';
         this.scene.stage.resize(this.size.width, this.size.height)
       },
       handleEditCommand(node){
-        console.log('dddddd', node, this)
         if (!node) {
           return
         }
@@ -153,10 +154,12 @@ import Aquila from '../components/aquila';
           model = this.dialogs.elementModel
           model.form.subtitles = [].concat(node.getSubtitles())
           model.form.title = node.getTitle()
+          model.form.script = node.getScript()
         } else if (node.isType('entity')) {
           model = this.dialogs.entityModel
           model.form.subtitles = [].concat(node.label().getSubtitles())
           model.form.title = node.label().getTitle()
+          model.form.script = node.label().getScript()
         } else {
           this.$Message.error({
             content: 'Unknown node - ' + command
@@ -177,9 +180,6 @@ import Aquila from '../components/aquila';
         if (parent && parent.isType('label')) {
           parent = parent.parent()
         }
-
-        console.log(parent, command)
-
         let model = null
         if (command === 'decorator') {
           if (!parent.canAcceptDecorator()){
@@ -258,7 +258,8 @@ import Aquila from '../components/aquila';
                 // 添加Element
                 let config = {
                   title: model.form.title,
-                  subtitles: model.form.subtitles
+                  subtitles: model.form.subtitles,
+                  script: model.form.script
                 }
                 
                 if (model.form.type === 'decorator') {
@@ -279,6 +280,7 @@ import Aquila from '../components/aquila';
               // 修改节点属性
               model.host.setTitle(model.form.title)
               model.host.setSubtitles(model.form.subtitles)
+              model.host.setScript(model.form.script)
               model.host.parent().adjust()
               this.scene.stage.refresh()
               this.scene.stage.snapshot()
@@ -301,7 +303,8 @@ import Aquila from '../components/aquila';
                   config: {
                     label: {
                       title: model.form.title,
-                      subtitles: model.form.subtitles
+                      subtitles: model.form.subtitles,
+                      script: model.form.script
                     }
                   }
                 }
@@ -320,6 +323,7 @@ import Aquila from '../components/aquila';
              if (valid) {
               // 修改节点属性
               model.host.label().setTitle(model.form.title)
+              model.host.label().setScript(model.form.script)
               model.host.label().setSubtitles(model.form.subtitles)
               model.host.adjust()
               this.scene.stage.refresh()
@@ -347,6 +351,7 @@ import Aquila from '../components/aquila';
 
         reader.onload = () => {
           let json = JSON.parse(reader.result)
+          this.$store.commit('updateInternalCache', json)
           this.scene.stage.loadFromJson(json)
         }
         reader.readAsText(selectedFile)
@@ -356,7 +361,7 @@ import Aquila from '../components/aquila';
       },
       save(){
         this.scene.cache = this.scene.stage.saveToJson()
-        console.log(this.scene.cache)
+        this.$store.commit('updateInternalCache', this.scene.cache)
         // 保存到本地文件
         let filename = this.scene.cache.root.config.label.title
         let blob = new Blob([JSON.stringify(this.scene.cache)], {type: "text/plain;charset=utf-8"})
@@ -373,23 +378,29 @@ import Aquila from '../components/aquila';
           }
           let json = JSON.parse(value)
           this.scene.stage.loadFromJson(json)
+          this.$store.commit('updateInternalCache', json)
         })
       },
       saveCache(){
         let json = this.scene.stage.saveToJson()
-        LocalForage.setItem(this.scene.cachekey, JSON.stringify(json), (err) => {
+        this.saveInternalCache(this.scene.cachekey, json)
+        this.$store.commit('updateInternalCache', json)
+      },
+      loadInternalCache(){
+        let json = this.$store.getters.internalCache
+        if (json) {
+          this.scene.stage.loadFromJson(json)
+        }
+      },
+      saveInternalCache(key, json) {
+        LocalForage.setItem(key, JSON.stringify(json), (err) => {
           if (err) {
             this.$Message.error({
-              content: 'Save failed',
+              content: `Save Cache [${key}] failed`,
               duration: 2
             })
             return
-          }
-
-          this.$Message.success({
-            content: 'Save success',
-            duration: 2
-          })
+          } 
         })
       },
       zoomIn(){
@@ -586,8 +597,8 @@ import Aquila from '../components/aquila';
         }
       })
 
-      // 测试
-      //this.test()
+      // 默认加载内部缓存数据
+      this.loadInternalCache()
     }
   }
 </script>

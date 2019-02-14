@@ -9,6 +9,9 @@
                         <Radio v-for="(val, key) in nodeTypes" :label="key" :disabled="model.action !== 'add' ">{{val}}</Radio>
                     </RadioGroup>
                 </FormItem>
+                <FormItem label="Name" prop="script" >
+                    <Input v-model="model.form.script" placeholder="Enter name"></Input>
+                </FormItem>
                 <FormItem label="Title" prop="title" >
                     <Input v-model="model.form.title" placeholder="Enter title"></Input>
                 </FormItem>
@@ -76,7 +79,8 @@
         inputVisible: false,
         inputValue: '',
         rules:{
-            title: [{ required: true, message: '不能为空', trigger: 'blur' }],
+            script: [{ type: 'string', required: true, message: '格式不合法，只能包含大小写字母、数字和下划线', pattern: /^[a-zA-Z0-9_]+$/, trigger: 'blur' }],
+            title: [{ type: 'string', required: true, message: '不能为空', trigger: 'blur' }],
             type: [{ required: true, message: '不能为空', trigger: 'change' }]
         }
       }

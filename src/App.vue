@@ -1,31 +1,27 @@
 <template>
   <div id="app">
-    <Layout class="tools-main">
-      <Sider :collapsed-width="65" ref="aside" hide-trigger collapsible v-model="isCollapsed">
-        <div class="tools-logo-menu">
-          <img src="./assets/logo.png" width="36" height="36" class="tools-middle">
-        </div>
-        <Menu
-          theme="dark"
-          active-name="editor"
-          :default-active="activeIndex"
-          :class="menuitemClasses"
-          width="auto"
-          @on-select="handleSelect"
-        >
-          <MenuItem name="editor">
-            <Icon type="ios-apps"></Icon>
-            <span>行为树编辑台</span>
-          </MenuItem>
-          <MenuItem name="debug">
-            <Icon type="ios-hammer"></Icon>
-            <span>行为树调试台</span>
-          </MenuItem>
-        </Menu>
-      </Sider>
-      <Content>
-        <router-view/>
-      </Content>
+      <Layout class="tools-main">
+            <Header>
+                <Menu mode="horizontal" theme="dark" active-name="editor" @on-select="handleSelect">
+                    <div class="layout-logo">
+                        <img src="./assets/logo.png" width="36" height="36">
+                    </div>
+                    <div class="layout-title">
+                        Hydrus
+                    </div>
+                    <div class="layout-nav">
+                        <MenuItem name="editor">
+                            <Icon type="ios-apps"></Icon>
+                            Editor
+                        </MenuItem>
+                         <MenuItem name="debug">
+                             <Icon type="ios-hammer"></Icon>
+                            Debug
+                        </MenuItem>
+                    </div>
+                </Menu>
+            </Header>
+            <router-view/>
     </Layout>
   </div>
 </template>
@@ -47,55 +43,45 @@
   width: 100%;
 }
 
-.tools-logo-menu {
-  height: 58px;
-  text-align: center;
-  padding: 0;
+.layout{
+    border: 1px solid #d7dde4;
+    background: #f5f7f9;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 100%;
+}
+.layout-logo{
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    float: left;
+    position: relative;
+    top: 15px;
+    left: 20px;
 }
 
-.tools-middle {
-  display: inline-block;
-  vertical-align: middle;
+.layout-title {
+    width: 100px;
+    height: 40px;
+    color: #fff;
+    float: left;
+    line-height: 40px;
+    position: relative;
+    top: 15px;
 }
 
-.el-menu-vertical {
-  height: 100%;
+.layout-nav{
+    width: 420px;
+    margin: 0 auto;
+    margin-right: 20px;
 }
 
-.layout {
-  border: 1px solid #d7dde4;
-  background: #f5f7f9;
-  position: relative;
-  border-radius: 4px;
-  overflow: hidden;
+.CodeMirror {
+  border: 1px solid #eee;
+  height: 600px;
 }
 
-.menu-item span {
-  display: inline-block;
-  overflow: hidden;
-  width: 0px;
-  white-space: nowrap;
-  vertical-align: bottom;
-  transition: width 0.2s ease 0.2s;
-}
-
-.menu-item i {
-  transform: translateY(5px);
-  transition: font-size 0.2s ease, transform 0.2s ease;
-  vertical-align: middle;
-  font-size: 22px;
-}
-
-.collapsed-menu span {
-  width: 0px;
-  transition: width 0.2s ease;
-}
-.collapsed-menu i {
-  transform: translateX(5px);
-  transition: font-size 0.2s ease 0.2s, transform 0.2s ease 0.2s;
-  vertical-align: middle;
-  font-size: 22px;
-}
 </style>
 
 <script>
@@ -105,14 +91,10 @@ export default {
   components: { ElContainer },
   data() {
     return {
-      isCollapsed: true,
-      activeIndex: "editor"
-    };
+      activeIndex: "editor",
+    }
   },
   computed: {
-    menuitemClasses: function() {
-      return ["menu-item", this.isCollapsed ? "collapsed-menu" : ""];
-    }
   },
   methods: {
     handleSelect(key, keyPath) {
@@ -122,13 +104,8 @@ export default {
       };
       this.$router.replace(page);
     },
-    collapsedSider() {
-      this.$refs.aside.toggleCollapse()
-    }
   },
   mounted: function () {
-      this.collapsedSider()
-      this.$forceUpdate()
   }
 }
 </script>

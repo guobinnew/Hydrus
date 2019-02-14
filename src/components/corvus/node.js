@@ -115,7 +115,7 @@ class BTNode {
   /**
    * 删除自己
    */
-  destroy (self = true) {
+  destroy (self = true, notify = true) {
     this.root.destroy()
   }
 

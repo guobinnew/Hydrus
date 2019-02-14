@@ -232,6 +232,28 @@ class BTLabelNode extends BTNode {
     this.adjust()
   }
 
+  /**
+   * 
+   */
+  getScript () {
+    return this.config.script
+  }
+
+  /**
+   * 
+   */
+  setScript (script) {
+    if (!script) {
+      script = ''
+    }
+
+    if (this.config.script === script) {
+      return
+    }
+    this.config.script = script
+    // TODO
+  }
+
   getSubtitles () {
     return this.config.subtitles
   }
