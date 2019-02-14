@@ -94,6 +94,8 @@
 .output-panel {
   text-align: left;
   margin-left: 12px;
+  height: 500px;
+  overflow: auto;
 }
  .output-time{
     font-size: 14px;
@@ -148,7 +150,7 @@
           engine: null,
           script: null,
           tree: null,
-          loop: 1,
+          loop: 10,
           current: 0,
           timer: null,
           interval: 5,
