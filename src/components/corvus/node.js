@@ -41,7 +41,13 @@ class BTNode {
       this.close = this.createCloseButton({
         size: 10,
         uid: this.config.uid,
-        action: this.destroy.bind(this)
+        action: () => {
+          let stage = this.stage()
+          if (stage && stage.isReadOnly()) {
+            return
+          }
+          this.destroy()
+        }
       })
       this.root.add(this.close)
     }

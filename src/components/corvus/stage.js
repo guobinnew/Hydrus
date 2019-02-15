@@ -18,6 +18,7 @@ class BTStage {
       canZoom: true,
       canWheelZoom: true,
       readonly: false,
+      debug: false,
       events: {}
     }
     Aquila.Utils.lodash.merge(this.options, options)
@@ -123,15 +124,17 @@ class BTStage {
     this.stage.on('mousemove', (evt) => {
       this.mousePos = this.stage.getPointerPosition()
       let drag = this.dragMarker.getAttr('@drag')
-      if (drag && !this.isDraging && !this.options.readonly) {
+      if (drag && !this.isDraging && !this.isReadOnly()) {
           this.isDraging = true
           this.dragMarker.startDrag()
       }
     })
 
     this.stage.on('dblclick', (evt) => {
-      if (!this.options.readonly && this.select && this.select !== this.root) {
-        this.options.events.edit && this.options.events.edit(this.select)
+      if (this.select && this.select !== this.root) {
+        if (!this.isReadOnly() || this.isDebug()) {
+          this.options.events.edit && this.options.events.edit(this.select)
+        }
       }
     })
 
@@ -139,7 +142,7 @@ class BTStage {
     })
 
     this.stage.on('dragmove', (evt) => {
-      if (evt.target instanceof Konva.Stage || this.options.readonly) {
+      if (evt.target instanceof Konva.Stage || this.isReadOnly()) {
         return
       }
 
@@ -260,6 +263,10 @@ class BTStage {
     // focus
     this.cache = null
     let container = this.stage.container()
+    // 阻止右键菜单
+    container.oncontextmenu = function (event) {
+      event.preventDefault()
+    }
     container.tabIndex = 1
     container.focus()
 
@@ -711,6 +718,17 @@ class BTStage {
       // 加载之前缓冲（保留缓冲队列）
       this.loadFromJson(cache, false)
     }
+  }
+
+  /**
+   * 
+   */
+  isReadOnly () {
+    return this.options.readonly
+  }
+
+  isDebug() {
+    return this.options.debug
   }
 
 }

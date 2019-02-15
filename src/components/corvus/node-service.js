@@ -21,6 +21,7 @@ class BTServiceNode extends BTLabelNode {
   }
 
   destroy (self = true, notify = true) {
+   
     // 通知父节点删除
     if (notify) {
       let parent = this.parent()
@@ -32,9 +33,7 @@ class BTServiceNode extends BTLabelNode {
 
     if (notify) {
       let stage = this.stage()
-      if (stage) {
-        stage.snapshot()
-      }
+      stage && stage.snapshot()
     }
   }
 }

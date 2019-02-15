@@ -811,7 +811,6 @@ class BTEntityNode extends BTNode {
    * 
    */
   destroy (self = true, notify = true) {
-
      // 通知父节点删除
      if (notify) {
       let parent = this.parent()

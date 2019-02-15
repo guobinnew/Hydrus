@@ -22,7 +22,7 @@
               <Button icon="ios-crop" @click="clearScript"></Button>
             </ButtonGroup>
             <Divider />
-            <Tree :data="scripts" class="script-tree"></Tree>
+            <Tree :data="scripts" class="script-tree" id="script-tree" :render="renderTreeContent"></Tree>
           </TabPane>
           <TabPane label="Run" icon="logo-windows">
             <Row>
@@ -32,7 +32,7 @@
                 <Button icon="md-square" @click="reset"></Button>
             </Row>
             <Divider />
-            <Timeline class="output-panel">
+            <Timeline class="output-panel" id="output-panel">
               <TimelineItem v-for="(item,index) in simulator.outputs" :color="item.color">
                 <p class="output-time">{{index}}<span>{{item.timestamp + 'ms'}}</span></p>
                 <p v-for="text in item.content">{{text}}</p>
@@ -43,12 +43,19 @@
       </Sider>
     </Layout>
     <input type="file" id="hydrusfile" style="display: none" @change="loadLocalFile">
-     <Drawer title="Script Editor" width="1024" :closable="false" v-model="scriptEditor.visible">
+    <Drawer title="Script Editor" width="1024" :closable="false" v-model="scriptEditor.visible">
          <ButtonGroup class="editor-button">
           <Button icon="md-create" @click="saveScript">Save</Button>
         </ButtonGroup>
          <codemirror ref="code" v-model="scriptEditor.code" :options="scriptEditor.options"></codemirror>
     </Drawer>
+    <Modal :title="dialogs.scriptModel.title" v-model="dialogs.scriptModel.visible" :closable="false" width="60%">
+            <EditScript :model="dialogs.scriptModel" ref="editScript"></EditScript>
+            <div slot="footer">
+                <Button @click="dialogs.scriptModel.visible = false">Cancel</Button>
+                <Button type="primary" @click="handleScriptModel">Ok</Button>
+            </div>
+    </Modal>
   </div>
 </template>
 
@@ -85,6 +92,9 @@
 .script-tree {
   text-align: left;
   margin-left: 12px;
+  height: 500px;
+  min-height: 200px;
+  overflow: auto;
 }
 
 .editor-button {
@@ -95,6 +105,7 @@
   text-align: left;
   margin-left: 12px;
   height: 500px;
+  min-height: 200px;
   overflow: auto;
 }
  .output-time{
@@ -119,10 +130,10 @@
   import 'codemirror/theme/monokai.css'
   import Corvus from '../components/corvus'
   import Aquila from '../components/aquila'
-  import { FastLayer } from 'konva';
+  import EditScript from '../components/EditScript.vue'
 
   export default {
-    components: {codemirror},
+    components: {codemirror, EditScript},
     data: function () {
       return {
         size: {
@@ -130,7 +141,8 @@
           height: 0
         },
         scene: {
-          stage: null
+          stage: null,
+          editables: ['task', 'decorator', 'service']
         },
         scriptEditor: {
           code: '',
@@ -188,7 +200,25 @@
             children: [
             ]
           }
-        ]
+        ],
+        dialogs: {
+          scriptModel: {
+            visible: false,
+            host: null,
+            title: 'Edit Script',
+            form: {
+              parent: '',
+              title: '',
+              script: '',
+              type: '',
+              invert: false,
+              parameters: []
+            }
+          },
+          blackboardModel: {
+            visible: false
+          }
+        }
       }
     },
     directives: {
@@ -201,6 +231,57 @@
         this.size.width = this.$el.clientWidth
         this.size.height = this.$el.clientHeight
         this.scene.stage.resize(this.size.width, this.size.height)
+        this.$el.querySelector('#script-tree').style.height = (this.size.height - 150) + 'px'
+        this.$el.querySelector('#output-panel').style.height = (this.size.height - 150) + 'px'
+        console.log('resize', this.size)
+      },
+      handleEditCommand(node){
+        if (!node) {
+          return
+        }
+        let parent = node.parent()
+        let command = node.nodeType()
+        let model = this.dialogs.scriptModel
+        console.log(node)
+        if (node.isType('label')) {
+          model.form.title = node.getTitle()
+          model.form.script = node.getScript()
+          model.form.parameters = [].concat(node.getScriptParameters())
+          model.form.invert = node.getInvert()
+        } else if (node.isType('entity')) {
+          model.form.title = node.label().getTitle()
+          model.form.script = node.label().getScript()
+          model.form.parameters = [].concat(node.label().getScriptParameters())
+        } else {
+          this.$Message.error({
+            content: 'Unknown node - ' + command
+          })
+          return
+        }
+
+        model.form.parent = parent.label().getTitle()
+        model.host = node
+        model.form.type = command
+        model.visible = true
+      },
+      handleScriptModel(){
+        let model = this.dialogs.scriptModel
+        this.$refs['editScript'].validate((valid) => {
+          if (valid) {
+            if (model.form.type === 'task') {
+              // 修改节点属性
+              model.host.label().setScript(model.form.script, model.form.parameters)
+            } else {
+              model.host.setScript(model.form.script, model.form.parameters)
+              model.host.setInvert(model.form.invert)
+            }
+            // 更新内部缓存
+            let json = this.scene.stage.saveToJson()
+            this.$store.commit('updateInternalCache', json)
+
+            model.visible = false
+          }
+        })
       },
       loadLocalFile() {
         let selectedFile = this.$el.querySelector('#hydrusfile').files[0]
@@ -223,8 +304,6 @@
       load(){
         let json = this.$store.getters.internalCache
         if (json) {
-          this.scene.cache = json
-          this.simulator.tree = this.convert(json)
           this.scene.stage.loadFromJson(json)
           // 检查脚本是否完整
         } else {
@@ -236,18 +315,20 @@
       },
       convert (json) {
         this.simulator.tree = {}
-        const actors = ['task', 'decorator', 'service']
         const walk = (node) => {
           let n = {
             type: node.type,
           }
-          let idx = actors.indexOf(n.type)
+          let idx = this.scene.editables.indexOf(n.type)
           n.label = idx > 0 ? node.config.title : node.config.label.title
 
-          // TODO 添加参数
           if (idx >= 0) {
             n.actor = {
               id: n.type === 'task' ? node.config.label.script : node.config.script
+            }
+            let params = (n.type === 'task') ? node.config.label.parameters : node.config.parameters
+            if (params) {
+              n.actor.params = [].concat(params)
             }
           }
 
@@ -269,13 +350,14 @@
         }
         this.simulator.tree.root = walk(json.root)
         
+        console.log('TRee', this.simulator.tree)
       },
       check () {
         // 检测Tree中脚本是否有效
         const errors = []
-        if (!this.simulator.tree) {
-          this.convert(this.scene.cache)
-        }
+        // 
+        let json = this.$store.getters.internalCache
+        this.convert(json)
         const tree = this.simulator.tree
         if (!tree || !tree.root || !this.simulator.script) {
           this.simulator.isReady = false
@@ -356,6 +438,43 @@
             }
          })
       },
+      renderTreeContent (h, { root, node, data }) {
+        console.log('Render', data)
+        let children = [h('span', data.title)]
+        if (data.type === 'Variable') {
+          children.push(h('span',{
+              style: {
+                color: 'red',
+                fontSize: '14px',
+                marginLeft: '4px'
+              },
+              domProps: {
+                innerHTML: data.datatype
+              }
+            })
+          )
+          children.push(h('span',{
+              style: {
+                color: 'black',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                marginLeft: '8px'
+              },
+              domProps: {
+                innerHTML: data.value
+              }
+            })
+          )
+        } 
+
+        return h('span', {
+            style: {
+                display: 'inline-block',
+                width: '100%'
+            }
+          }, 
+          children)
+      },
       saveScript () {
         let code = '' + this.scriptEditor.code
         // 剔除注释
@@ -371,14 +490,53 @@
         console.log('parsed', this.simulator.script)
         // 重新生成script结构
         if (this.simulator.script) {
+          // 递归生成变量结构
+          const processVar = (value, parent) => {
+            parent.datatype = Aquila.Utils.common.typeOf(value)
+            if (parent.datatype === 'number') {
+              parent.value = '' + value
+            } else if (parent.datatype === 'string') {
+              parent.value = value
+            } else if (parent.datatype === 'boolean') {
+              parent.value = value ? 'true' : 'false'
+            } else if (parent.datatype === 'array') {
+              parent.children = []
+              for(let i=0; i<value.length; i++) {
+                 let item = {
+                  type: parent.type,
+                  title: `[${i}]`,
+                  value: '',
+                  datatype: ''
+                }
+                processVar(value[i], item)
+                parent.children.push(item)
+              }
+            } else if (parent.datatype === 'object') {
+              parent.children = []
+              for(let [key, val] of Object.entries(value)) {
+                 let item = {
+                  type: parent.type,
+                  title: key,
+                  value: '',
+                  datatype: ''
+                }
+                processVar(val, item)
+                parent.children.push(item)
+              }
+            }
+          }
           const process = (obj, index, type) => {
             if (obj) {
               let list = []
               for (const key in obj) {
-                list.push({
+                let item = {
                   type: type,
-                  title: key
-                })
+                  title: key,
+                  value: '',
+                  datatype: ''
+                }
+                processVar(obj[key], item)
+                list.push(item)
               }
               this.scripts[index].title = this.scripts[index].type + '(' + list.length + ')'
               this.scripts[index].children = list
@@ -507,11 +665,20 @@
       // 随窗口动态改变大小
       this.size.width = this.$el.clientWidth
       this.size.height = this.$el.clientHeight
+
       this.scene.stage = Corvus.init({
         container: 'scene',    //container 用来容纳舞台的容器
         width: this.size.width,
         height: this.size.height,
-        readonly: true
+        readonly: true,
+        debug: true,
+        events: {
+          edit: (node) => {
+            if (this.scene.editables.indexOf(node.nodeType()) >= 0) {
+              this.handleEditCommand(node)
+            }
+          }
+        }
       })
 
       this.test()

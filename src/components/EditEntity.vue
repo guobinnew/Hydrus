@@ -9,11 +9,11 @@
                         <Radio v-for="(val, key) in nodeTypes" :label="key">{{val}}</Radio>
                     </RadioGroup>
                 </FormItem>
-                <FormItem label="Name" prop="script" >
-                    <Input v-model="model.form.script" placeholder="Enter name"></Input>
-                </FormItem>
                 <FormItem label="Title" prop="title" >
                     <Input v-model="model.form.title" placeholder="Enter title"></Input>
+                </FormItem>
+                 <FormItem label="Script" prop="script" v-if="model.form.type === 'task'">
+                    <Input v-model="model.form.script" placeholder="Enter script function"></Input>
                 </FormItem>
                 <FormItem label="Subtitiles">
                     <Tag
@@ -67,10 +67,10 @@
     data: function () {
       return {
         nodeTypes: {
-            selector: 'selector',
-            sequence: 'sequence',
-            parallel: 'parallel',
-            task: 'task'
+            selector: 'Selector',
+            sequence: 'Sequence',
+            parallel: 'Parallel',
+            task: 'Task'
         },
         inputVisible: false,
         inputValue: '',

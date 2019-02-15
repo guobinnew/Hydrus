@@ -36,7 +36,7 @@
         </Modal>
         <Modal :title="dialogs.entityModel.title" v-model="dialogs.entityModel.visible" :closable="false" width="60%">
             <EditEntity :model="dialogs.entityModel" ref="editEntity"></EditEntity>
-            <div slot="footer" class="dialog-footer">
+            <div slot="footer">
                 <Button @click="dialogs.entityModel.visible = false">Cancel</Button>
                 <Button type="primary" @click="handleEntityModel">Ok</Button>
             </div>
@@ -155,6 +155,7 @@ import Aquila from '../components/aquila'
           model.form.subtitles = [].concat(node.getSubtitles())
           model.form.title = node.getTitle()
           model.form.script = node.getScript()
+          model.form.invert = node.getInvert()
         } else if (node.isType('entity')) {
           model = this.dialogs.entityModel
           model.form.subtitles = [].concat(node.label().getSubtitles())
@@ -190,6 +191,7 @@ import Aquila from '../components/aquila'
           }
           model = this.dialogs.elementModel
           model.form.subtitles = ['condition']
+          model.form.invert = false
         } else if (command === 'service') {
           if (!parent.canAcceptService()){
               this.$Message.error({
@@ -259,7 +261,8 @@ import Aquila from '../components/aquila'
                 let config = {
                   title: model.form.title,
                   subtitles: model.form.subtitles,
-                  script: model.form.script
+                  script: model.form.script,
+                  invert: model.form.invert
                 }
                 
                 if (model.form.type === 'decorator') {
@@ -281,6 +284,9 @@ import Aquila from '../components/aquila'
               model.host.setTitle(model.form.title)
               model.host.setSubtitles(model.form.subtitles)
               model.host.setScript(model.form.script)
+              if (model.form.type === 'decorator') {
+                model.host.setInvert(model.form.invert)
+              }
               model.host.parent().adjust()
               this.scene.stage.refresh()
               this.scene.stage.snapshot()

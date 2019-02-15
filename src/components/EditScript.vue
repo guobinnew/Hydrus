@@ -1,37 +1,35 @@
  <template>
-    <div class="container" id="element">
+    <div class="container" id="script">
             <Form :model="model.form" :label-width="120" :rules="rules" ref="form">
                 <FormItem label="Parent">
                     <Tag color="success">{{ model.form.parent }}</Tag>
                 </FormItem>
                  <FormItem label="Type" prop="type">
-                    <RadioGroup v-model="model.form.type" @on-change="handleTypeChange">
-                        <Radio v-for="(val, key) in nodeTypes" :label="key" :disabled="model.action !== 'add'">{{val}}</Radio>
-                    </RadioGroup>
+                   <Tag color="primary">{{ model.form.type }}</Tag>
                 </FormItem>
                 <FormItem label="Title" prop="title" >
-                    <Input v-model="model.form.title" placeholder="Enter title"></Input>
+                    <Input v-model="model.form.title" placeholder="Enter title" :readonly="true"></Input>
                 </FormItem>
-                <FormItem label="Script" prop="script">
+                <FormItem label="Script" prop="script" >
                     <Input v-model="model.form.script" placeholder="Enter script function"></Input>
                 </FormItem>
-                <FormItem label="Subtitiles">
+                <FormItem label="Parameters">
                     <Tag
-                            :key="tag"
-                            color="warning"
-                            v-for="(tag, i) in model.form.subtitles"
-                            :closable=" i > 0 "
-                            @close="handleTagClose(tag)">
-                        {{tag}}
+                      :key="tag"
+                      color="warning"
+                      v-for="(tag, i) in model.form.parameters"
+                      :closable=" i > 0 "
+                      @close="handleTagClose(tag)">
+                      {{tag}}
                     </Tag>
                     <Input
-                            class="input-new-tag"
-                            v-if="inputVisible"
-                            v-model="inputValue"
-                            ref="saveTagInput"
-                            size="small"
-                            @keyup.enter.native="handleTagInputConfirm"
-                            @on-blur="handleTagInputConfirm"
+                      class="input-new-tag"
+                      v-if="inputVisible"
+                      v-model="inputValue"
+                      ref="saveTagInput"
+                      size="small"
+                      @keyup.enter.native="handleTagInputConfirm"
+                      @on-blur="handleTagInputConfirm"
                     >
                     </Input>
                      <Button v-else  icon="ios-add" size="small" @click="showTagInput">
@@ -48,21 +46,20 @@
  </template>
 <style scoped>
     .container {
-        text-align: left;
-
+      text-align: left;
     }
 
     .el-tag + .el-tag {
-        margin-left: 10px;
+      margin-left: 10px;
     }
    
     .el-tag {
-        margin-top: 4px;
+      margin-top: 4px;
     }
 
     .input-new-tag {
-        width: 90px;
-        margin-left: 10px;
+      width: 90px;
+      margin-left: 10px;
     }
 
 </style>
@@ -74,7 +71,8 @@
       return {
         nodeTypes: {
             decorator: 'Decorator',
-            service: 'Service'
+            service: 'Service',
+            task: 'Task'
         },
         inputVisible: false,
         inputValue: '',
@@ -87,7 +85,7 @@
     },
     methods: {
       handleTagClose(tag) {
-        this.model.form.subtitles.splice(this.model.form.subtitles.indexOf(tag), 1);
+        this.model.form.parameters.splice(this.model.form.parameters.indexOf(tag), 1);
       },
       showTagInput() {
         this.inputVisible = true
@@ -98,19 +96,10 @@
       handleTagInputConfirm() {
         let inputValue = this.inputValue
         if (inputValue) {
-          this.model.form.subtitles.push(inputValue)
+          this.model.form.parameters.push(inputValue)
         }
         this.inputVisible = false
         this.inputValue = ''
-      },
-      handleTypeChange() {
-          let subs = this.model.form.subtitles.slice(1)
-          if (this.model.form.type === 'decorator') {
-              subs.splice(0,0,'condition')
-          } else {
-              subs.splice(0,0,'service')
-          }
-          this.model.form.subtitles = subs
       },
       validate(cb) {
           this.$refs['form'].validate((valid) => {
