@@ -519,6 +519,12 @@
               props: {
                 value: data.value,
                 size: 'small'
+              },
+              on: {
+                'on-blur': (event) => {
+                  data.value = event.target.value
+                  data.update && data.update(data.value)
+                }
               }
             })
             )
@@ -528,8 +534,15 @@
                 marginLeft: '8px',
               },
               props: {
-                value: data.value === '',
+                value: data.value,
                 size: 'small'
+              },
+               on: {
+                'on-change': (value) => {
+                  data.value = value
+                  data.update && data.update(data.value)
+                  return value
+                }
               }
             })
             )
@@ -541,6 +554,13 @@
               props: {
                 value: data.value,
                 size: 'small'
+              },
+               on: {
+                'on-change': (value) => {
+                  data.value = value
+                  data.update && data.update(data.value)
+                  return value
+                }
               }
             })
             )
@@ -573,14 +593,14 @@
           const process = (obj, index, type) => {
             if (obj) {
               let list = []
-              for (const key in obj) {
+              for (const key of Object.keys(obj)) {
                 let item = {
                   type: type,
                   title: key,
                   value: '',
                   datatype: ''
                 }
-                this.processVar(obj[key], item)
+                this.processVar(key, obj, item)
                 list.push(item)
               }
               this.scripts[index].title = this.scripts[index].type + '(' + list.length + ')'
@@ -633,14 +653,30 @@
 */
 `
       },
-      processVar (value, parent) {
+      processVar (key, obj, parent, bind = false) {
+            let value = obj[key]
             parent.datatype = Aquila.Utils.common.typeOf(value)
             if (parent.datatype === 'number') {
               parent.value = value
+              if (bind){
+                parent.update = (newVal) => {
+                  obj[key] = newVal
+                }
+              }
             } else if (parent.datatype === 'string') {
               parent.value = value
+               if (bind) {
+                parent.update = (newVal) => {
+                  obj[key] = newVal
+                }
+              }
             } else if (parent.datatype === 'boolean') {
               parent.value = value
+               if (bind) {
+                parent.update = (newVal) => {
+                  obj[key] = newVal
+                }
+              }
             } else if (parent.datatype === 'array') {
               parent.children = []
               for(let i=0; i<value.length; i++) {
@@ -650,19 +686,19 @@
                   value: null,
                   datatype: ''
                 }
-                this.processVar(value[i], item)
+                this.processVar(i, value, item, bind)
                 parent.children.push(item)
               }
             } else if (parent.datatype === 'object') {
               parent.children = []
-              for(let [key, val] of Object.entries(value)) {
+              for(let key of Object.keys(value)) {
                  let item = {
                   type: parent.type,
                   title: key,
                   value: null,
                   datatype: ''
                 }
-                this.processVar(val, item)
+                this.processVar(key, value, item, bind)
                 parent.children.push(item)
               }
             }
@@ -671,18 +707,17 @@
           let list = []
           const obj = this.simulator.blackboard
           if (obj) {
-            for (const key in obj) {
+            for (const key of Object.keys(obj)) {
               let item = {
                 type: 'Variable',
                 title: key,
                 value: '',
                 datatype: ''
               }
-              this.processVar(obj[key], item)
+              this.processVar(key, obj, item, true)
               list.push(item)
             }
           }
-          console.log('BBBBBB', list)
           this.blackboard = list
       },
       tick () {
