@@ -15,8 +15,8 @@
     </div>
       </Content>
        <Sider ref="aside" hide-trigger class="sider" width="300">
-         <Tabs>
-          <TabPane label="Scripts" icon="logo-apple"> 
+         <Tabs class='tabs'>
+          <TabPane name="scripts" icon="md-paper"> 
             <ButtonGroup>
               <Button icon="ios-color-wand-outline"  @click="editScript"></Button>
               <Button icon="ios-crop" @click="clearScript"></Button>
@@ -24,7 +24,7 @@
             <Divider />
             <Tree :data="scripts" class="script-tree" id="script-tree" :render="renderTreeContent"></Tree>
           </TabPane>
-          <TabPane label="Run" icon="logo-windows">
+          <TabPane name="control" icon="md-paper-plane">
             <Row>
                 <InputNumber :max="9999" :min="1" v-model="simulator.loop"></InputNumber>
                 <Button icon="md-arrow-dropright"  @click="run"></Button>
@@ -38,6 +38,13 @@
                 <p v-for="text in item.content">{{text}}</p>
               </TimelineItem>
             </Timeline>
+          </TabPane>
+          <TabPane name="blackboard" icon="md-list-box"> 
+            <ButtonGroup>
+              <Button icon="md-square"  @click="resetBlackboard"></Button>
+            </ButtonGroup>
+            <Divider />
+            <Tree :data="blackboard" class="blackboard-tree" id="blackboard-tree" :render="renderBlackboardContent"></Tree>
           </TabPane>
         </Tabs>
       </Sider>
@@ -76,7 +83,12 @@
   width: 100%;
 }
 .sider {
-  background: #ddd;
+  background-color: #515a6e;
+  color: #eee;
+}
+
+.tabs {
+  color: #eee !important;
 }
 
 .menu {
@@ -95,6 +107,16 @@
   height: 500px;
   min-height: 200px;
   overflow: auto;
+  color: #eee;
+}
+
+.blackboard-tree {
+  text-align: left;
+  margin-left: 12px;
+  height: 500px;
+  min-height: 200px;
+  overflow: auto;
+  color: #eee;
 }
 
 .editor-button {
@@ -108,10 +130,12 @@
   min-height: 200px;
   overflow: auto;
 }
- .output-time{
-    font-size: 14px;
-    font-weight: bold;
-  }
+
+.output-time{
+  font-size: 14px;
+  font-weight: bold;
+  color: #eee;
+}
 
   .output-time span {
     margin-left: 4px;
@@ -201,6 +225,8 @@
             ]
           }
         ],
+        blackboard: [
+        ],
         dialogs: {
           scriptModel: {
             visible: false,
@@ -233,7 +259,6 @@
         this.scene.stage.resize(this.size.width, this.size.height)
         this.$el.querySelector('#script-tree').style.height = (this.size.height - 150) + 'px'
         this.$el.querySelector('#output-panel').style.height = (this.size.height - 150) + 'px'
-        console.log('resize', this.size)
       },
       handleEditCommand(node){
         if (!node) {
@@ -242,7 +267,6 @@
         let parent = node.parent()
         let command = node.nodeType()
         let model = this.dialogs.scriptModel
-        console.log(node)
         if (node.isType('label')) {
           model.form.title = node.getTitle()
           model.form.script = node.getScript()
@@ -349,8 +373,6 @@
           return n
         }
         this.simulator.tree.root = walk(json.root)
-        
-        console.log('TRee', this.simulator.tree)
       },
       check () {
         // 检测Tree中脚本是否有效
@@ -439,12 +461,11 @@
          })
       },
       renderTreeContent (h, { root, node, data }) {
-        console.log('Render', data)
         let children = [h('span', data.title)]
         if (data.type === 'Variable') {
           children.push(h('span',{
               style: {
-                color: 'red',
+                color: 'yellow',
                 fontSize: '14px',
                 marginLeft: '4px'
               },
@@ -455,7 +476,7 @@
           )
           children.push(h('span',{
               style: {
-                color: 'black',
+                color: '#ddd',
                 fontSize: '16px',
                 fontWeight: 'bold',
                 marginLeft: '8px'
@@ -467,6 +488,65 @@
           )
         } 
 
+        return h('span', {
+            style: {
+                display: 'inline-block',
+                width: '100%'
+            }
+          }, 
+          children)
+      },
+      renderBlackboardContent (h, { root, node, data }) {
+        let children = [h('span', data.title)]
+        if (data.type === 'Variable') {
+          children.push(h('span',{
+              style: {
+                color: 'yellow',
+                fontSize: '14px',
+                marginLeft: '4px'
+              },
+              domProps: {
+                innerHTML: data.datatype
+              }
+            })
+          )
+          if (data.datatype === 'string') {
+            children.push(h('Input',{
+              style: {
+                marginLeft: '8px',
+                width: '50%'
+              },
+              props: {
+                value: data.value,
+                size: 'small'
+              }
+            })
+            )
+          } else if  (data.datatype === 'boolean') {
+            children.push(h('i-switch',{
+              style: {
+                marginLeft: '8px',
+              },
+              props: {
+                value: data.value === '',
+                size: 'small'
+              }
+            })
+            )
+          } else if  (data.datatype === 'number') {
+            children.push(h('InputNumber',{
+              style: {
+                marginLeft: '8px',
+              },
+              props: {
+                value: data.value,
+                size: 'small'
+              }
+            })
+            )
+          }
+         
+        }
         return h('span', {
             style: {
                 display: 'inline-block',
@@ -487,44 +567,9 @@
 
         // 解析js代码
         this.simulator.script = eval('(function(){' + code + ';return d})()')
-        console.log('parsed', this.simulator.script)
         // 重新生成script结构
         if (this.simulator.script) {
           // 递归生成变量结构
-          const processVar = (value, parent) => {
-            parent.datatype = Aquila.Utils.common.typeOf(value)
-            if (parent.datatype === 'number') {
-              parent.value = '' + value
-            } else if (parent.datatype === 'string') {
-              parent.value = value
-            } else if (parent.datatype === 'boolean') {
-              parent.value = value ? 'true' : 'false'
-            } else if (parent.datatype === 'array') {
-              parent.children = []
-              for(let i=0; i<value.length; i++) {
-                 let item = {
-                  type: parent.type,
-                  title: `[${i}]`,
-                  value: '',
-                  datatype: ''
-                }
-                processVar(value[i], item)
-                parent.children.push(item)
-              }
-            } else if (parent.datatype === 'object') {
-              parent.children = []
-              for(let [key, val] of Object.entries(value)) {
-                 let item = {
-                  type: parent.type,
-                  title: key,
-                  value: '',
-                  datatype: ''
-                }
-                processVar(val, item)
-                parent.children.push(item)
-              }
-            }
-          }
           const process = (obj, index, type) => {
             if (obj) {
               let list = []
@@ -535,7 +580,7 @@
                   value: '',
                   datatype: ''
                 }
-                processVar(obj[key], item)
+                this.processVar(obj[key], item)
                 list.push(item)
               }
               this.scripts[index].title = this.scripts[index].type + '(' + list.length + ')'
@@ -544,8 +589,6 @@
           }
 
           let root = this.simulator.script
-          // 克隆数据
-          this.simulator.blackboard = Aquila.Utils.common.clone(this.simulator.script.data)
           process(root.data, 0, 'Variable')
           process(root.decorators, 1, 'Decorator')
           process(root.services, 2, 'Service')
@@ -556,6 +599,9 @@
             r.children = []
           }
         }
+
+        // 重置运行状态
+        this.reset()
       },
       zoomIn(){
         this.scene.stage.zoomIn()
@@ -587,9 +633,63 @@
 */
 `
       },
+      processVar (value, parent) {
+            parent.datatype = Aquila.Utils.common.typeOf(value)
+            if (parent.datatype === 'number') {
+              parent.value = value
+            } else if (parent.datatype === 'string') {
+              parent.value = value
+            } else if (parent.datatype === 'boolean') {
+              parent.value = value
+            } else if (parent.datatype === 'array') {
+              parent.children = []
+              for(let i=0; i<value.length; i++) {
+                 let item = {
+                  type: parent.type,
+                  title: `[${i}]`,
+                  value: null,
+                  datatype: ''
+                }
+                this.processVar(value[i], item)
+                parent.children.push(item)
+              }
+            } else if (parent.datatype === 'object') {
+              parent.children = []
+              for(let [key, val] of Object.entries(value)) {
+                 let item = {
+                  type: parent.type,
+                  title: key,
+                  value: null,
+                  datatype: ''
+                }
+                this.processVar(val, item)
+                parent.children.push(item)
+              }
+            }
+      },
+      updateBlackBoard() {
+          let list = []
+          const obj = this.simulator.blackboard
+          if (obj) {
+            for (const key in obj) {
+              let item = {
+                type: 'Variable',
+                title: key,
+                value: '',
+                datatype: ''
+              }
+              this.processVar(obj[key], item)
+              list.push(item)
+            }
+          }
+          console.log('BBBBBB', list)
+          this.blackboard = list
+      },
       tick () {
-        console.log('tick')
         this.simulator.engine && this.simulator.engine.tick()
+        // 刷新Blackboard
+        this.updateBlackBoard()
+
         this.simulator.current++
         if (this.simulator.current < this.simulator.loop) {
           this.simulator.timer = setTimeout(this.tick, this.simulator.interval)
@@ -610,6 +710,7 @@
             delete this.simulator.engine
           }
 
+          this.resetBlackboard()
           this.simulator.engine = new Aquila.Engine({
             data: this.simulator.blackboard,
             decorators: this.simulator.script.decorators,
@@ -657,8 +758,14 @@
         this.stop()
         this.simulator.current = 0
         this.simulator.isReady = false
-        this.simulator.blackboard = Aquila.Utils.common.clone(this.simulator.script.data)
         this.simulator.outputs = []
+        this.resetBlackboard()
+      },
+      resetBlackboard() {
+        // 将blackboard数据恢复初始值
+        this.simulator.blackboard = Aquila.Utils.common.clone(this.simulator.script.data)
+        this.simulator.engine && this.simulator.engine.$blackboard.load(this.simulator.blackboard)
+        this.updateBlackBoard()
       }
     },
     mounted: function () {

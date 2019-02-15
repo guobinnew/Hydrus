@@ -108,10 +108,6 @@ class BTStage {
       }
 
       this.refresh()
-
-      if (this.select) {
-        console.log(this.select.config)
-      }
     })
 
     this.stage.on('mouseup', (evt) => {

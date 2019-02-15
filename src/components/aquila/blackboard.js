@@ -7,7 +7,12 @@ class BlackBoard {
    * @param data Object 必须是对象类型 
    */
   constructor (data) {
+    this.load(data)
+  }
+
+  load (data) {
     this.data = data
+    this.$data = this.data
     Utils.common.def(data, '__board__', this)
     this.walk(data)
   }
@@ -63,6 +68,13 @@ class BlackBoard {
    */
   getData () {
     return this.data
+  }
+
+  /**
+   * 
+   */
+  cloneData() {
+    return Utils.common.clone(this.data)
   }
 
   /**

@@ -136,7 +136,7 @@ class Behavior {
       return
     }
 
-    this.__func__ = f.bind(context.$blackboard.getData())
+    this.__func__ = f.bind(context.$blackboard)
   }
 }
 

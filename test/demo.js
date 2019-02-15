@@ -26,40 +26,40 @@ const d = {
   },
   decorators: {
     isHot (delta, upbound = 30) {
-      return this.temperature >= upbound
+      return this.$data.temperature >= upbound
     },
     isCold (delta, downbound = 15) {
-      return this.temperature <= downbound
+      return this.$data.temperature <= downbound
     },
     isDry (delta, downbound = 10) {
-      return this.humidity <= downbound
+      return this.$data.humidity <= downbound
     },
     isHumid (delta, upbound = 60) {
-      return this.humidity >= upbound
+      return this.$data.humidity >= upbound
     }
   },
   tasks: {
     heating () {
-      this.temperature += 5
-      console.log('heating--', this.temperature)
+      this.$data.temperature += 5
+      console.log('heating--', this.$data.temperature)
     },
     cooling () {
-      this.temperature -= 3
-      console.log('cooling--', this.temperature)
+      this.$data.temperature -= 3
+      console.log('cooling--', this.$data.temperature)
     },
     humidifing () {
-      this.humidity += 1
+      this.$data.humidity += 1
     },
     roasting () {
-      this.humidity -= 1
+      this.$data.humidity -= 1
     },
     openWindow () {
-      this.isWindowOpening = true
-      this.temperature -= 5
-      this.humidity += 5
+      this.$data.isWindowOpening = true
+      this.$data.temperature -= 5
+      this.$data.humidity += 5
     },
     closeWindow () {
-      this.isWindowOpening = false
+      this.$data.isWindowOpening = false
     }
   }
 }
