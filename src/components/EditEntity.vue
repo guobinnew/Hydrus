@@ -5,7 +5,7 @@
                     <Tag color="success">{{ model.form.parent }}</Tag>
                 </FormItem>
                  <FormItem label="Type" prop="type">
-                    <RadioGroup v-model="model.form.type" :disabled="model.action !== 'add' ">
+                    <RadioGroup v-model="model.form.type" :disabled="model.action !== 'add' " @on-change="handleTypeChange">
                         <Radio v-for="(val, key) in nodeTypes" :label="key">{{val}}</Radio>
                     </RadioGroup>
                 </FormItem>
@@ -82,6 +82,13 @@
       }
     },
     methods: {
+      handleTypeChange () {
+        if (this.model.action === 'add') {
+          this.model.title = 'Add ' + this.nodeTypes[this.model.form.type]
+        } else {
+          this.model.title = 'Edit ' + this.nodeTypes[this.model.form.type]
+        }
+      },
       handleTagClose(tag) {
         this.model.form.subtitles.splice(this.model.form.subtitles.indexOf(tag), 1);
       },

@@ -104,13 +104,18 @@
         this.inputValue = ''
       },
       handleTypeChange() {
-          let subs = this.model.form.subtitles.slice(1)
-          if (this.model.form.type === 'decorator') {
-              subs.splice(0,0,'condition')
-          } else {
-              subs.splice(0,0,'service')
-          }
-          this.model.form.subtitles = subs
+        if (this.model.action === 'add') {
+          this.model.title = 'Add ' + this.nodeTypes[this.model.form.type]
+        } else {
+          this.model.title = 'Edit ' + this.nodeTypes[this.model.form.type]
+        }
+        let subs = this.model.form.subtitles.slice(1)
+        if (this.model.form.type === 'decorator') {
+          subs.splice(0,0,'condition')
+        } else {
+          subs.splice(0,0,'service')
+        }
+        this.model.form.subtitles = subs
       },
       validate(cb) {
           this.$refs['form'].validate((valid) => {
