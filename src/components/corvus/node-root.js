@@ -1,5 +1,5 @@
 
-import Aquila from '../aquila/index'
+import Aquila from 'orion-aquila'
 import Konva from 'konva'
 import BTEntityNode from './node-entity'
 import Utils from './node-utils'

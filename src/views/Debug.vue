@@ -153,7 +153,7 @@
   import 'codemirror/mode/javascript/javascript'
   import 'codemirror/theme/monokai.css'
   import Corvus from '../components/corvus'
-  import Aquila from '../components/aquila'
+  import Aquila from 'orion-aquila'
   import EditScript from '../components/EditScript.vue'
 
   export default {

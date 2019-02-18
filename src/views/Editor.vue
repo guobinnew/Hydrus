@@ -79,7 +79,7 @@
   import Corvus from '../components/corvus/index'
   import EditElement from '../components/EditElement.vue'
   import EditEntity from '../components/EditEntity.vue'
-import Aquila from '../components/aquila'
+  import Aquila from 'orion-aquila'
 
   export default {
     components: { EditElement, EditEntity },

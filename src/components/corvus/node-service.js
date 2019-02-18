@@ -1,5 +1,5 @@
 
-import Aquila from '../aquila/index'
+import Aquila from 'orion-aquila'
 import Konva from 'konva'
 import BTLabelNode from './node-label'
 import Utils from './node-utils'

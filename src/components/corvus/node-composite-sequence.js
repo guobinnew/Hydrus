@@ -1,4 +1,4 @@
-import Aquila from '../aquila/index'
+import Aquila from 'orion-aquila'
 import BTCompositeNode from './node-composite'
 
 class BTSequenceNode extends BTCompositeNode {
