@@ -1,42 +1,43 @@
  <template>
     <div class="container" id="entity">
-            <el-form :model="model.form" label-width="120px" size="small" status-icon
-                     :rules="rules" ref="form">
-                <el-form-item label="Parent">
-                    <el-tag type="success">{{ model.form.parent }}</el-tag>
-                </el-form-item>
-                 <el-form-item label="Type" prop="type">
-                    <el-radio-group v-model="model.form.type" :disabled="model.action !== 'add' ">
-                        <el-radio-button v-for="(val, key) in nodeTypes" :label="key" name="type">{{val}}</el-radio-button>
-                    </el-radio-group>
-                </el-form-item>
-                <el-form-item label="Title" prop="title" >
-                    <el-input v-model="model.form.title" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="Subtitiles">
-                    <el-tag
+            <Form :model="model.form" :label-width="120" :rules="rules" ref="form">
+                <FormItem label="Parent">
+                    <Tag color="success">{{ model.form.parent }}</Tag>
+                </FormItem>
+                 <FormItem label="Type" prop="type">
+                    <RadioGroup v-model="model.form.type" :disabled="model.action !== 'add' " @on-change="handleTypeChange">
+                        <Radio v-for="(val, key) in nodeTypes" :label="key">{{val}}</Radio>
+                    </RadioGroup>
+                </FormItem>
+                <FormItem label="Title" prop="title" >
+                    <Input v-model="model.form.title" placeholder="Enter title"></Input>
+                </FormItem>
+                 <FormItem label="Script" prop="script" v-if="model.form.type === 'task'">
+                    <Input v-model="model.form.script" placeholder="Enter script function"></Input>
+                </FormItem>
+                <FormItem label="Subtitiles">
+                    <Tag
                             :key="tag"
+                            color="warning"
                             v-for="(tag, i) in model.form.subtitles"
                             :closable=" i > 0 "
-                            :disable-transitions="false"
                             @close="handleTagClose(tag)">
                         {{tag}}
-                    </el-tag>
-                    <el-input
+                    </Tag>
+                    <Input
                             class="input-new-tag"
                             v-if="inputVisible"
                             v-model="inputValue"
                             ref="saveTagInput"
                             size="small"
                             @keyup.enter.native="handleTagInputConfirm"
-                            @blur="handleTagInputConfirm"
+                            @on-blur="handleTagInputConfirm"
                     >
-                    </el-input>
-                    <el-button v-else class="button-new-tag" size="small" @click="showTagInput">
-                        +
-                    </el-button>
-                </el-form-item>
-            </el-form>
+                    </Input>
+                    <Button v-else  icon="ios-add" size="small" @click="showTagInput">
+                    </Button>
+                </FormItem>
+            </Form>
     </div>        
  </template>
 <style scoped>
@@ -44,7 +45,7 @@
         text-align: left;
 
     }
-    
+
     .el-tag + .el-tag {
         margin-left: 10px;
     }
@@ -53,20 +54,9 @@
         margin-top: 4px;
     }
 
-    .button-new-tag {
-        margin-left: 10px;
-        margin-top: 4px;
-        height: 32px;
-        line-height: 32px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
     .input-new-tag {
         width: 90px;
         margin-left: 10px;
-        margin-top: 4px;
-        vertical-align: bottom;
     }
 
 </style>
@@ -75,31 +65,30 @@
   export default {
     props: ["model"],
     data: function () {
-
-       const validateSelect = (rule, value, callback) => {
-        if (value === '') {
-          callback(new Error('不能为空'))
-        } else {
-          callback()
-        }
-      }
-
       return {
         nodeTypes: {
-            selector: 'selector',
-            sequence: 'sequence',
-            parallel: 'parallel',
-            task: 'task'
+            selector: 'Selector',
+            sequence: 'Sequence',
+            parallel: 'Parallel',
+            task: 'Task'
         },
         inputVisible: false,
         inputValue: '',
         rules:{
-            title: [{ required: true, message: '不能为空', trigger: 'blur' }],
-            type: [{ required: true, validator: validateSelect, trigger: 'change' }]
+            script: [{ type: 'string', required: true, message: '格式不合法，只能包含大小写字母、数字和下划线', pattern: /^[a-zA-Z_][a-zA-Z0-9_]+$/, trigger: 'blur' }],
+            title: [{ type: 'string', required: true, message: '不能为空', trigger: 'blur' }],
+            type: [{ required: true,  message: '不能为空',  trigger: 'change'}]
         }
       }
     },
     methods: {
+      handleTypeChange () {
+        if (this.model.action === 'add') {
+          this.model.title = 'Add ' + this.nodeTypes[this.model.form.type]
+        } else {
+          this.model.title = 'Edit ' + this.nodeTypes[this.model.form.type]
+        }
+      },
       handleTagClose(tag) {
         this.model.form.subtitles.splice(this.model.form.subtitles.indexOf(tag), 1);
       },

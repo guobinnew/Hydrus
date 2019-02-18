@@ -18,6 +18,7 @@ class BTStage {
       canZoom: true,
       canWheelZoom: true,
       readonly: false,
+      debug: false,
       events: {}
     }
     Aquila.Utils.lodash.merge(this.options, options)
@@ -77,6 +78,7 @@ class BTStage {
     // 当前选中的节点
     this.select = null
     this.selectPos = null
+    this.orderCache = {}
 
     // 根节点
     this.addRootNode()
@@ -106,10 +108,6 @@ class BTStage {
       }
 
       this.refresh()
-
-      if (this.select) {
-        console.log(this.select.config)
-      }
     })
 
     this.stage.on('mouseup', (evt) => {
@@ -122,18 +120,17 @@ class BTStage {
     this.stage.on('mousemove', (evt) => {
       this.mousePos = this.stage.getPointerPosition()
       let drag = this.dragMarker.getAttr('@drag')
-      if (drag && !this.isDraging && !this.options.readonly) {
-        //let dist = Math.sqrt(Math.pow(this.mousePos.x - this.selectPos.x, 2) + Math.pow(this.mousePos.y - this.selectPos.y, 2))
-        //if (dist >= Utils.node.dragDistance) {
+      if (drag && !this.isDraging && !this.isReadOnly()) {
           this.isDraging = true
           this.dragMarker.startDrag()
-        //}
       }
     })
 
     this.stage.on('dblclick', (evt) => {
-      if (!this.options.readonly && this.select && this.select !== this.root) {
-        this.options.events.edit && this.options.events.edit(this.select)
+      if (this.select && this.select !== this.root) {
+        if (!this.isReadOnly() || this.isDebug()) {
+          this.options.events.edit && this.options.events.edit(this.select)
+        }
       }
     })
 
@@ -141,7 +138,7 @@ class BTStage {
     })
 
     this.stage.on('dragmove', (evt) => {
-      if (evt.target instanceof Konva.Stage || this.options.readonly) {
+      if (evt.target instanceof Konva.Stage || this.isReadOnly()) {
         return
       }
 
@@ -249,6 +246,7 @@ class BTStage {
             drop.node.setChildDropping(-1)
             drop.node.insertChild(drag, drop.index)
           }
+          this.snapshot()
         }
         this.updateOrder()
         this.dragMarker.setAttr('@drag', null)
@@ -261,6 +259,10 @@ class BTStage {
     // focus
     this.cache = null
     let container = this.stage.container()
+    // 阻止右键菜单
+    container.oncontextmenu = function (event) {
+      event.preventDefault()
+    }
     container.tabIndex = 1
     container.focus()
 
@@ -282,8 +284,10 @@ class BTStage {
               // 判断节点是否能够接受
               if (this.cache.type === 'decorator' && sel.canAcceptDecorator()) {
                 sel.addDecorator(this.cache.config)
+                this.snapshot()
               } else if (this.cache.type === 'service' && sel.canAcceptService()) {
                 sel.addService(this.cache.config)
+                this.snapshot()
               } else {
                 return
               }
@@ -295,11 +299,8 @@ class BTStage {
               if (sel.canAcceptChild()) {
                 let n = this.createEntity(this.cache)
                 if (n) {
-                  sel.addChild(n, false)
-                  sel.adjust({
-                    downward: true,
-                    upward: true
-                  })
+                  sel.addChild(n)
+                  this.snapshot()
                 } else {
                   return
                 }
@@ -311,11 +312,19 @@ class BTStage {
           return
         }
       } else {
+        if (this.select && this.select !== this.root) { // Root节点除外
+          if (evt.keyCode === 37) { // Left
+
+
+          } else if (evt.keyCode === 39) { // Right
+
+          }
+        }
         return
       }
       evt.preventDefault()
       this.layers.model.batchDraw()
-    });
+    })
   }
 
   /**
@@ -345,6 +354,15 @@ class BTStage {
 
   updateOrder () {
     this.root.updateOrder(-1)
+  }
+
+  /**
+   * 
+   * @param {*} order 
+   * @param {*} entity 
+   */
+  cacheOrder(order, entity) {
+
   }
 
   /**
@@ -696,6 +714,17 @@ class BTStage {
       // 加载之前缓冲（保留缓冲队列）
       this.loadFromJson(cache, false)
     }
+  }
+
+  /**
+   * 
+   */
+  isReadOnly () {
+    return this.options.readonly
+  }
+
+  isDebug() {
+    return this.options.debug
   }
 
 }

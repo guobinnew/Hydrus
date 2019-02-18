@@ -41,7 +41,13 @@ class BTNode {
       this.close = this.createCloseButton({
         size: 10,
         uid: this.config.uid,
-        action: this.destroy
+        action: () => {
+          let stage = this.stage()
+          if (stage && stage.isReadOnly()) {
+            return
+          }
+          this.destroy()
+        }
       })
       this.root.add(this.close)
     }
@@ -115,7 +121,7 @@ class BTNode {
   /**
    * 删除自己
    */
-  destroy (self = true) {
+  destroy (self = true, notify = true) {
     this.root.destroy()
   }
 
@@ -178,8 +184,9 @@ class BTNode {
       lineJoin: 'round'
     })
     close.add(vline)
-    close.setAttr('@pid', opt.uid)
-    close.on('mousedown', opt.action)
+    close.on('mousedown', function() {
+      opt.action && opt.action()
+    })
 
     close.on('mouseout', function () {
       vline.setAttr('stroke', opt.stroke)

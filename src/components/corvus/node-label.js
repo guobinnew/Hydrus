@@ -232,6 +232,63 @@ class BTLabelNode extends BTNode {
     this.adjust()
   }
 
+  /**
+   * 
+   */
+  getScript () {
+    return this.config.script
+  }
+
+   /**
+   * 
+   */
+  getScriptParameters () {
+    !this.config.parameters && (this.config.parameters = [])
+    return this.config.parameters
+  }
+
+  /**
+   * 
+   */
+  setScript (script, parameters) {
+    if (!script) {
+      script = ''
+    }
+
+    if (this.config.script !== script) {
+      this.config.script = script
+    }
+    
+    if (!Aquila.Utils.common.isArray(parameters)) {
+      parameters = []
+    } else {
+      this.config.parameters = [].concat(parameters)
+    }
+  
+  }
+
+   /**
+   * 
+   */
+  getInvert () {
+    return this.config.invert
+  }
+
+  /**
+   * 
+   */
+  setInvert (inv) {
+    if (inv == null) {
+      inv = false
+    }
+
+    if (this.config.invert === inv) {
+      return
+    }
+    this.config.invert = inv
+    // TODO
+  }
+
   getSubtitles () {
     return this.config.subtitles
   }

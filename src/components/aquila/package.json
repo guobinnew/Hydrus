@@ -4,7 +4,8 @@
   "description": "behavior tree engine",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/gulp"
+    "build": "./node_modules/.bin/gulp",
+    "test": "./node_modules/.bin/babel-node ./test/demo.js"
   },
   "dependencies": {
     "blob-util": "^2.0.2",

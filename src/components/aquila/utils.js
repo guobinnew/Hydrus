@@ -176,8 +176,60 @@ const utils = {
         ])
       }
       return t.join('-')
-    }
+    },
 
+    /**
+    * 合并对象(浅拷贝)
+    * @param target
+    * @param src
+    * @returns {*}
+    */
+    extend (target, ...src) {
+      if (typeof Object.assign === 'function') {
+        Object.assign(target, ...src)
+      } else {
+        const first = src.shift()
+        // 覆盖旧值
+        for (const key in first) {
+          target[key] = first[key]
+        }
+        if (src.length) {
+          utils.common.extend(target, ...src)
+        }
+      }
+      return target
+    },
+
+    /**
+    * 定义属性
+    * @param obj
+    * @param key
+    * @param val
+    * @param enumerable
+    */
+    def (obj, key, val, enumerable) {
+      Object.defineProperty(obj, key, {
+        value: val,
+        enumerable: !!enumerable,
+        writable: true,
+        configurable: true
+      })
+    },
+
+    /**
+    *
+    * @param arr
+    * @param item
+    * @returns {*|Array.<T>}
+    */
+    removeArray (arr, item) {
+      if (arr.length) {
+        const index = arr.indexOf(item)
+        if (index > -1) {
+          return arr.splice(index, 1)
+        }
+      }
+    }
   },
   base64: {
     encodeBuffer: function (arraybuffer) {
@@ -227,15 +279,6 @@ const utils = {
       }
 
       return arraybuffer
-    }
-  },
-  devs: {
-    state: {
-      Passive: 0
-    },
-    time: {
-      Initial: 0,
-      Infinity: 0x7FFFFFFFFFFFFFFF
     }
   }
 }

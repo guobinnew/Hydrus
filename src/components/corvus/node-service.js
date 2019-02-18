@@ -19,6 +19,23 @@ class BTServiceNode extends BTLabelNode {
       acceptTypes: ['service']
     }, config))
   }
+
+  destroy (self = true, notify = true) {
+   
+    // 通知父节点删除
+    if (notify) {
+      let parent = this.parent()
+      if (parent) {
+        parent.removeService(this)
+      }
+    }
+    this.root.destroy()
+
+    if (notify) {
+      let stage = this.stage()
+      stage && stage.snapshot()
+    }
+  }
 }
 
 export default BTServiceNode

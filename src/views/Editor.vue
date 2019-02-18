@@ -2,45 +2,45 @@
   <div class="container" v-resize="onContainerResize">
     <div id="scene"></div>
     <div class="menu">
-      <el-row>
-        <el-button-group>
-          <el-button type="primary" icon="fa fa-folder-open" @click="load"></el-button>
-          <el-button type="primary" icon="fa fa-floppy-o" @click="save"></el-button>
-          <el-button type="primary" icon="fa fa-cloud-download" @click="loadCache"></el-button>
-          <el-button type="primary" icon="fa fa-cloud-upload" @click="saveCache"></el-button>
-          <el-button type="primary" icon="fa fa-search-plus" @click="zoomIn"></el-button>
-          <el-button type="primary" icon="fa fa-search-minus" @click="zoomOut"></el-button>
-          <el-button type="primary" icon="fa fa-retweet" @click="reset"></el-button>
-          <el-button type="primary" icon="fa fa-undo" @click="undo"></el-button>
-          <el-button type="primary" icon="fa fa-repeat" @click="redo"></el-button>
-          <el-button type="primary" icon="fa fa-trash " @click="clear"></el-button>
+      <Row>
+        <ButtonGroup>
+          <Button type="primary" icon="md-folder-open" @click="load"></Button>
+          <Button type="primary" icon="md-archive" @click="save"></Button>
+          <Button type="primary" icon="md-cloud-download" @click="loadCache"></Button>
+          <Button type="primary" icon="md-cloud-upload" @click="saveCache"></Button>
+          <Button type="primary" icon="md-add-circle" @click="zoomIn"></Button>
+          <Button type="primary" icon="md-remove-circle" @click="zoomOut"></Button>
+          <Button type="primary" icon="md-refresh-circle" @click="reset"></Button>
+          <Button type="primary" icon="md-undo" @click="undo"></Button>
+          <Button type="primary" icon="md-redo" @click="redo"></Button>
+          <Button type="primary" icon="md-trash " @click="clear"></Button>
 
-          <el-dropdown @command="handleAddCommand">
-              <el-button type="danger" icon="el-icon-menu">
-               <i class="el-icon-arrow-down el-icon--right"></i>
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="(val, key) in nodeTypes" :command="key">{{val}}</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-        </el-button-group>
-      </el-row>
+          <Dropdown @on-click="handleAddCommand">
+              <Button type="error" icon="ios-cube">
+               <Icon type="ios-arrow-down"></Icon>
+              </Button>
+              <DropdownMenu slot="list">
+                <DropdownItem v-for="(val, key) in nodeTypes" :name="key">{{val}}</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+        </ButtonGroup>
+      </Row>
     </div>
     <input type="file" id="hydrusfile" style="display: none" @change="loadLocalFile">
-        <el-dialog :title="dialogs.elementModel.title" :visible.sync="dialogs.elementModel.visible" :close-on-click-modal="false" width="60%">
+        <Modal :title="dialogs.elementModel.title" v-model="dialogs.elementModel.visible" :closable="false" width="60%">
             <EditElement :model="dialogs.elementModel" ref="editElement"></EditElement>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogs.elementModel.visible = false">Cancel</el-button>
-                <el-button type="primary" @click="handleElementModel">Ok</el-button>
+                <Button @click="dialogs.elementModel.visible = false">Cancel</Button>
+                <Button type="primary" @click="handleElementModel">Ok</Button>
             </div>
-        </el-dialog>
-        <el-dialog :title="dialogs.entityModel.title" :visible.sync="dialogs.entityModel.visible" :close-on-click-modal="false" width="60%">
+        </Modal>
+        <Modal :title="dialogs.entityModel.title" v-model="dialogs.entityModel.visible" :closable="false" width="60%">
             <EditEntity :model="dialogs.entityModel" ref="editEntity"></EditEntity>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogs.entityModel.visible = false">Cancel</el-button>
-                <el-button type="primary" @click="handleEntityModel">Ok</el-button>
+            <div slot="footer">
+                <Button @click="dialogs.entityModel.visible = false">Cancel</Button>
+                <Button type="primary" @click="handleEntityModel">Ok</Button>
             </div>
-        </el-dialog>
+        </Modal>
 
   </div>
 </template>
@@ -49,7 +49,6 @@
 .container {
   overflow: hidden;
   height: 100%;
-  line-height: 40px;
 }
 
 #scene {
@@ -67,6 +66,10 @@
   margin-left: 40px;
   margin-top: 10px;
 }
+
+.ivu-dropdown {
+  margin-left: 10px;
+}
 </style>
 
 <script>
@@ -76,7 +79,7 @@
   import Corvus from '../components/corvus/index'
   import EditElement from '../components/EditElement.vue'
   import EditEntity from '../components/EditEntity.vue'
-import Aquila from '../components/aquila';
+import Aquila from '../components/aquila'
 
   export default {
     components: { EditElement, EditEntity },
@@ -88,7 +91,7 @@ import Aquila from '../components/aquila';
         },
         scene: {
           stage: null,
-          cachekey: 'hydruscache',
+          cachekey: 'hydruscache'
         },
         nodeTypes: {
           selector: 'Selector',
@@ -107,8 +110,10 @@ import Aquila from '../components/aquila';
             form: {
               parent: '',
               title: '',
+              script: '',
               subtitles: [],
-              type: ''
+              type: '',
+              invert: false
             }
           },
           entityModel: {
@@ -119,6 +124,7 @@ import Aquila from '../components/aquila';
             form: {
               parent: '',
               title: '',
+              script: '',
               subtitles: [],
               type: ''
             }
@@ -138,7 +144,6 @@ import Aquila from '../components/aquila';
         this.scene.stage.resize(this.size.width, this.size.height)
       },
       handleEditCommand(node){
-        console.log('dddddd', node, this)
         if (!node) {
           return
         }
@@ -149,12 +154,17 @@ import Aquila from '../components/aquila';
           model = this.dialogs.elementModel
           model.form.subtitles = [].concat(node.getSubtitles())
           model.form.title = node.getTitle()
+          model.form.script = node.getScript()
+          model.form.invert = node.getInvert()
         } else if (node.isType('entity')) {
           model = this.dialogs.entityModel
           model.form.subtitles = [].concat(node.label().getSubtitles())
           model.form.title = node.label().getTitle()
+          model.form.script = node.label().getScript()
         } else {
-          this.$message.error('Unknown node - ' + command)
+          this.$Message.error({
+            content: 'Unknown node - ' + command
+          })
           return
         }
 
@@ -171,54 +181,66 @@ import Aquila from '../components/aquila';
         if (parent && parent.isType('label')) {
           parent = parent.parent()
         }
-
-        console.log(parent, command)
-
         let model = null
         if (command === 'decorator') {
           if (!parent.canAcceptDecorator()){
-             this.$message.error('Selected Node can not add ' + command)
-             return
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
+            return
           }
           model = this.dialogs.elementModel
           model.form.subtitles = ['condition']
+          model.form.invert = false
         } else if (command === 'service') {
           if (!parent.canAcceptService()){
-             this.$message.error('Selected Node can not add ' + command)
+              this.$Message.error({
+               content: 'Selected Node can not add ' + command
+              })
              return
           }
           model = this.dialogs.elementModel
           model.form.subtitles = [command]
         } else if (command === 'selector') {
           if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
-             return
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
+            return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else if (command === 'sequence') {
            if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
              return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else if (command === 'parallel') {
            if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
-             return
+            this.$Message.error({
+              content: 'Selected Node can not add ' + command
+            })
+            return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else if (command === 'task') {
            if (!parent.canAcceptChild()){
-             this.$message.error('Selected Node can not add ' + command)
+             this.$Message.error({
+               content: 'Selected Node can not add ' + command
+             })
              return
           }
           model = this.dialogs.entityModel
           model.form.subtitles = [command]
         } else {
-          this.$message.error('Unknown Command - ' + command)
+          this.$Message.error({
+            content: 'Unknown Command - ' + command 
+          })
           return
         }
 
@@ -238,7 +260,9 @@ import Aquila from '../components/aquila';
                 // 添加Element
                 let config = {
                   title: model.form.title,
-                  subtitles: model.form.subtitles
+                  subtitles: model.form.subtitles,
+                  script: model.form.script,
+                  invert: model.form.invert
                 }
                 
                 if (model.form.type === 'decorator') {
@@ -248,6 +272,7 @@ import Aquila from '../components/aquila';
                 }
                 this.scene.stage.updateOrder()
                 this.scene.stage.refresh()
+                this.scene.stage.snapshot()
                 model.visible = false
               }
           })
@@ -258,8 +283,13 @@ import Aquila from '../components/aquila';
               // 修改节点属性
               model.host.setTitle(model.form.title)
               model.host.setSubtitles(model.form.subtitles)
+              model.host.setScript(model.form.script)
+              if (model.form.type === 'decorator') {
+                model.host.setInvert(model.form.invert)
+              }
               model.host.parent().adjust()
               this.scene.stage.refresh()
+              this.scene.stage.snapshot()
               model.visible = false
              }
            })
@@ -279,7 +309,8 @@ import Aquila from '../components/aquila';
                   config: {
                     label: {
                       title: model.form.title,
-                      subtitles: model.form.subtitles
+                      subtitles: model.form.subtitles,
+                      script: model.form.script
                     }
                   }
                 }
@@ -288,6 +319,7 @@ import Aquila from '../components/aquila';
                 model.host.addChild(child)
                 this.scene.stage.updateOrder()
                 this.scene.stage.refresh()
+                this.scene.stage.snapshot()
                 model.visible = false
               }
           })
@@ -297,9 +329,11 @@ import Aquila from '../components/aquila';
              if (valid) {
               // 修改节点属性
               model.host.label().setTitle(model.form.title)
+              model.host.label().setScript(model.form.script)
               model.host.label().setSubtitles(model.form.subtitles)
               model.host.adjust()
               this.scene.stage.refresh()
+              this.scene.stage.snapshot()
               model.visible = false
              }
            })
@@ -313,10 +347,9 @@ import Aquila from '../components/aquila';
         let name = selectedFile.name
         let size = selectedFile.size //读取选中文件的大小
         if (size === 0){
-            this.$message({
-              message: `File <${name}> is empty`,
-              type: 'error',
-              duration: 2000
+            this.$Message.error({
+              content: `File <${name}> is empty`,
+              duration: 2
             })
            return
         }
@@ -324,6 +357,7 @@ import Aquila from '../components/aquila';
 
         reader.onload = () => {
           let json = JSON.parse(reader.result)
+          this.$store.commit('updateInternalCache', json)
           this.scene.stage.loadFromJson(json)
         }
         reader.readAsText(selectedFile)
@@ -333,7 +367,7 @@ import Aquila from '../components/aquila';
       },
       save(){
         this.scene.cache = this.scene.stage.saveToJson()
-        console.log(this.scene.cache)
+        this.$store.commit('updateInternalCache', this.scene.cache)
         // 保存到本地文件
         let filename = this.scene.cache.root.config.label.title
         let blob = new Blob([JSON.stringify(this.scene.cache)], {type: "text/plain;charset=utf-8"})
@@ -342,34 +376,37 @@ import Aquila from '../components/aquila';
       loadCache(){
         LocalForage.getItem(this.scene.cachekey, (err, value) => {
           if (err) {
-            this.$message({
-              message: 'Cache data is empty',
-              type: 'warning',
-              duration: 2000
+            this.$Message.warning({
+              content: 'Cache data is empty',
+              duration: 2
             })
             return
           }
           let json = JSON.parse(value)
           this.scene.stage.loadFromJson(json)
+          this.$store.commit('updateInternalCache', json)
         })
       },
       saveCache(){
         let json = this.scene.stage.saveToJson()
-        LocalForage.setItem(this.scene.cachekey, JSON.stringify(json), (err) => {
+        this.saveInternalCache(this.scene.cachekey, json)
+        this.$store.commit('updateInternalCache', json)
+      },
+      loadInternalCache(){
+        let json = this.$store.getters.internalCache
+        if (json) {
+          this.scene.stage.loadFromJson(json)
+        }
+      },
+      saveInternalCache(key, json) {
+        LocalForage.setItem(key, JSON.stringify(json), (err) => {
           if (err) {
-            this.$message({
-              message: 'Save failed',
-              type: 'error',
-              duration: 2000
+            this.$Message.error({
+              content: `Save Cache [${key}] failed`,
+              duration: 2
             })
             return
-          }
-
-          this.$message({
-            message: 'Save success',
-            type: 'success',
-            duration: 2000
-          })
+          } 
         })
       },
       zoomIn(){
@@ -382,28 +419,19 @@ import Aquila from '../components/aquila';
         this.scene.stage.reset()
       },
       undo(){
-        this.$message({
-          message: 'Coming soon',
-          type: 'info',
-          duration: 2000
-        })
+        this.scene.stage.undo()
       },
       redo(){
-        this.$message({
-          message: 'Coming soon',
-          type: 'info',
-          duration: 2000
-        })
+        this.scene.stage.redo()
       },
       clear(){
-         this.$confirm('Are you sure?', 'Tip', {
-          confirmButtonText: 'Ok',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }).then(() => {
-         this.scene.stage.clear()
-        }).catch(() => {         
-        })
+         this.$Modal.confirm({
+           content: 'Are you sure?',
+           title: 'Tip', 
+           okText: 'Ok',
+           cancelText: 'Cancel',
+           onOk: () => {this.scene.stage.clear()}
+         })
       },
       test(){
         // Demo Tree JSON
@@ -575,8 +603,8 @@ import Aquila from '../components/aquila';
         }
       })
 
-      // 测试
-      //this.test()
+      // 默认加载内部缓存数据
+      this.loadInternalCache()
     }
   }
 </script>

@@ -810,14 +810,29 @@ class BTEntityNode extends BTNode {
   /**
    * 
    */
-  destroy (self = true) {
+  destroy (self = true, notify = true) {
+     // 通知父节点删除
+     if (notify) {
+      let parent = this.parent()
+      if (parent) {
+        parent.removeChild(this)
+      }
+    }
+
     // 删除elements
     this.clearChildren()
     if (self) {
       for (let elem of this.elements()) {
-        elem.destroy()
+        elem.destroy(true, false)
       }
       this.root.destroy()
+    }
+
+    if (notify) {
+      let stage = this.stage()
+      if (stage) {
+        stage.snapshot()
+      }
     }
   }
 
@@ -828,7 +843,7 @@ class BTEntityNode extends BTNode {
     // 删除elements
     if (this.children) {
       for (let child of this.children) {
-        child.destroy()
+        child.destroy(true, false)
       }
       this.children = []
     }
@@ -862,7 +877,6 @@ class BTEntityNode extends BTNode {
     }
     // Elements
     for (let dec of this.decorators) {
-      console.log(dec)
       json.elements.push(dec.toJson())
     }
 
@@ -881,7 +895,6 @@ class BTEntityNode extends BTNode {
    * 计算访问次序
    */
   updateOrder (start = -1) {
-    console.log('entity order =', start)
     if (start < 0) { // 所有order都为-1
       for (let elem of this.elements()) {
         elem.order(-1)

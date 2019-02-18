@@ -12,6 +12,7 @@ const Corvus = {
    *    canZoom: true,  // 是否允许缩放
    *    canWheelZoom: true // 是否允许滚轮缩放
    *    readonly: false // 只读模式
+   *    debug: false // debug模式（仅允许编辑脚本参数) 
    * }
    * @returns {Stage}
    */
