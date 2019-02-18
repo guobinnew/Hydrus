@@ -21,14 +21,42 @@ npm run serve
 
 ![image](https://github.com/guobinnew/Hydrus/blob/master/screenshots/editor.png?raw=true)
 
-#### 行为树节点
+### 菜单条
+
+从左往右依次为：
++ 打开本地JSON文件
++ 保存为本地JSON文件
++ 快速加载（LocalStorage）
++ 快速保存（LocalStorage）
++ 放大
++ 缩小
++ 重置
++ Undo
++ Redo
++ 清空
++ 添加节点/标签
+
+#### 添加节点
+
+4类节点：
 + Selector 选择节点
 + Sequence 序列节点
 + Parallel 并行节点
 + Task 任务节点
 
-#### 行为树标签
+![image](https://github.com/guobinnew/Hydrus/blob/master/screenshots/add-selector.png?raw=true)
+
+
+#### 添加标签
+
+2类标签
 + Decorator 条件标签
 + Service 服务标签
 
+![image](https://github.com/guobinnew/Hydrus/blob/master/screenshots/add-decorator.png?raw=true)
+
+
 ### 调试器
+
+![image](https://github.com/guobinnew/Hydrus/blob/master/screenshots/debug.png?raw=true)
+
